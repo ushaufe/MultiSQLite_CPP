@@ -1,0 +1,6 @@
+﻿  MultiSQliteMFDlg.cpp
+c:\projects\multisqlitemfc\multisqlitemf\multisqlitemf\multisqlitemfdlg.cpp(445): warning C4101: 'pSQL': unreferenced local variable
+c:\projects\multisqlitemfc\multisqlitemf\multisqlitemf\multisqlitemfdlg.cpp(524): warning C4101: 'pSQL': unreferenced local variable
+c:\projects\multisqlitemfc\multisqlitemf\multisqlitemf\multisqlitemfdlg.cpp(668): warning C4101: 'pSQL': unreferenced local variable
+c:\projects\multisqlitemfc\multisqlitemf\multisqlitemf\multisqlitemfdlg.cpp(858): warning C4101: 'rc': unreferenced local variable
+  MultiSQliteMF.vcxproj -> C:\Projects\MultiSQliteMFC\MultiSQliteMF\Debug\MultiSQliteMF.exe
