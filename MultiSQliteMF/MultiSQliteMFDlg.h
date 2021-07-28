@@ -2,6 +2,11 @@
 // MultiSQliteMFDlg.h : header file
 //
 
+// This is a C++ project to demonstrage how well SQLite can handle Multithreading
+// The documentation for this project and the accompanying C# projects can be found here:
+// (the location may be moved by the webmaster of the wiki)
+// https://mywiki.grp.haufemg.com/pages/viewpage.action?pageId=156088657
+
 #pragma once
 #include "sqlite/sqlite3.h"
 
@@ -23,30 +28,37 @@ public:
 #endif
 
 	protected:
+	// A handle to the ListBox must be kept static
+	// so that the different threads have access to the GUI
+	// This must be defined static so that the threads can access it outside of 
+	// the instance-contect
 	static CListBox* lb;
+	
+	
+	// This database-object is used for access without connection-pooling (multiple threads / one connection)
 	static sqlite3 *db;
 
+	// Different instances of the the database are used
+	// For simultaneous multithreading with multiple connection-objects (=Pooling)
+	// see => OnBnClickedMulticonnectWrite()
 	static sqlite3 *db0;
 	static sqlite3 *db1;
 	static sqlite3 *db2;
-
-	// Some global pool of database connections
-	//pool_t *db_pool;
-
-	/*
-	sqlite3 *get_database() {
-		sqlite3 *db = pool_pop(db_pool);
-		if (db)
-			return db;
-		if (sqlite3_open("database.sqlite3", &db))
-			return NULL;
-		return db;
-	}
-	*/
+	// The instances must be static to be accessible
+	// from the threads and hence outside of the 
+	// context of the class
+	
 
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
+	
+	// Each thread has an own function
 	static void t1();
 	static void t2();
+	
+	// A Window-handle must be kept 
+	// so that the different threads have access to the GUI
+	// This must be defined static so that the threads can access it outside of 
+	// the instance-contect
 	static CWnd* staticWnd;
 
 	CMyObject* pNewThreadObject;
@@ -66,9 +78,15 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
+	
+	// This method is called automatically after a "select from" database operation
 	static int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
+	// This method is called automatically after a "select from" database operation
+	// It fills the listbox-object and is called simultaneously from multiple threads
 	static int callback_flicker(void *NotUsed, int argc, char **argv, char **azColName);
+	
+	
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
