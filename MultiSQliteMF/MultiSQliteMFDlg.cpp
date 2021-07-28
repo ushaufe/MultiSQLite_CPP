@@ -23,7 +23,15 @@ using namespace std;
 #define new DEBUG_NEW
 #endif
 
+// The following static elements of the class must be redefined globally
+// Since they are static elements of the class and need redefinition
 CWnd* CMultiSQliteMFDlg::staticWnd;
+
+CListBox* CMultiSQliteMFDlg::lb;
+sqlite3* CMultiSQliteMFDlg::db;
+sqlite3* CMultiSQliteMFDlg::db0;
+sqlite3* CMultiSQliteMFDlg::db1;
+sqlite3* CMultiSQliteMFDlg::db2;
 
 // CAboutDlg dialog used for App About
 
@@ -66,7 +74,13 @@ CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MULTISQLITEMF_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	// The static listbox in order to access the GUI-element 
+	// from threads, which do not have access to an instance of the class
 	lb = NULL;
+
+	// The constructor sets all instances of connections to NULL
+	// so that it can be checked against NULL if a connection already exists
 	db = NULL;
 	db0 = NULL;
 	db1 = NULL;
@@ -191,20 +205,32 @@ HCURSOR CMultiSQliteMFDlg::OnQueryDragIcon()
 
 void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 {	
-	//CListBox* list = (CListBox*)GetDlgItem(IDC_LIST);
+	// This connection is not to be used by threads
+	// It should simply simulate the easiest case (simple access to SQlite)
+	// In order to rule out errors in the more complex cases
 	
 	if (db != NULL) {
 		AfxMessageBox(L"Error: Already Connected!");
 		return;
 	}
 
+
+	// The following cases handle access via multiple applications
+	// (Separate EXEs or separate DLLs)
+	// Only one application can use a SQlite-database exclusively for wriging
+	// Whereas multiple applications can use it for reading 
+	// even when locked from one app for wriging
 	int rc;
+	
+	// hence if a file already exists
 	if (PathFileExists(L"demo.db")) {
+		// only reading is possible
 		rc = sqlite3_open_v2("demo.db", &db, SQLITE_OPEN_READONLY, NULL);
 		SetWindowText(L"Read-Only");
 	}
 	else
 	{
+		// otherwise a second instance of the same application can be opened to read it
 		rc = sqlite3_open_v2("demo.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 		SetWindowText(L"Read + Write Access");
 	}
@@ -231,6 +257,8 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 		AfxMessageBox(L"Connected");
 	}
 
+	
+	//...Creating tables and inserting some data
 	pSQL[0] = "create table myTable (FirstName varchar(30), LastName varchar(30), Age smallint, Hometown varchar(30), Job varchar(30))";
 
 	pSQL[1] = "insert into myTable (FirstName, LastName, Age, Hometown, Job) values ('Peter', 'Griffin', 41, 'Quahog', 'Brewery')";
@@ -261,6 +289,10 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 }
 
 
+
+// This callback function is used after
+// the execution of "select from * " statements
+// From different threads
 int CMultiSQliteMFDlg::callback_flicker(void *NotUsed, int argc, char **argv, char **azColName)
 {
 	CListBox* list = (CListBox*)(staticWnd->GetDlgItem(IDC_LIST));
@@ -302,11 +334,7 @@ void CMultiSQliteMFDlg::OnLbnSelchangeList()
 	// TODO: Add your control notification handler code here
 }
 
-CListBox* CMultiSQliteMFDlg::lb;
-sqlite3* CMultiSQliteMFDlg::db;
-sqlite3* CMultiSQliteMFDlg::db0;
-sqlite3* CMultiSQliteMFDlg::db1;
-sqlite3* CMultiSQliteMFDlg::db2;
+
 
 void CMultiSQliteMFDlg::t1()
 {
