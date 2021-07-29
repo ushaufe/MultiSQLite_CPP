@@ -24,6 +24,7 @@
     <Keyword>MFCProj</Keyword>
     <RootNamespace>MultiSQliteMF</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <ProjectName>MultiSQLite_CPP</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -215,13 +216,19 @@
     <None Include="res\MultiSQliteMF.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\1920px-SQLite370.svg.png" />
     <Image Include="..\APP_TITLE.bmp" />
     <Image Include="..\bitmap1.bmp" />
     <Image Include="..\Connection2_Light2.bmp" />
     <Image Include="..\ConnectionIcon.ico" />
+    <Image Include="..\CPP.bmp" />
+    <Image Include="..\CPP32.bmp" />
+    <Image Include="..\CPP48.bmp" />
     <Image Include="..\Haufe.16bmp.bmp" />
     <Image Include="..\Haufe.bmp" />
     <Image Include="..\Haufe_Transparent.png" />
+    <Image Include="..\Sqlite.bmp" />
+    <Image Include="..\Sqlite64..bmp" />
     <Image Include="res\MultiSQliteMF.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

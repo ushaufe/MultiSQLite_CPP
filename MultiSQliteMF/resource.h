@@ -8,10 +8,14 @@
 #define IDD_MULTISQLITEMF_DIALOG        102
 #define IDB_BACKGROUND                  130
 #define IDR_MAINFRAME                   131
-#define IDB_HAUFE_PNG                   135
 #define IDB_HAUFE                       136
 #define IDB_HAUFE16                     138
-#define IDB_APP_TITLE                   139
+#define IDD_MAINDIALOG                  141
+#define IDB_SQLITE                      147
+#define IDB_APP_TITLE                   148
+#define IDB_CPP                         149
+#define IDB_CPP32                       150
+#define IDB_CPP48                       151
 #define IDC_BTN_CONNECT                 1000
 #define IDC_LIST                        1001
 #define IDC_Multithread                 1002
@@ -26,14 +30,16 @@
 #define BTN_MultiCount_Once             1012
 #define DB_Flicker_Counn                1013
 #define BTN_FlickerCount                1013
+#define IDB_SQLITE_PIC                  1019
+#define IDC_CPP_PIC                     1020
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -6,3 +6,5 @@
 /.vs/MultiSQliteMF/v17/Preview/ipch/AutoPCH/375cfa2a027f1757/MULTISQLITEMFDLG.ipch
 /.vs/MultiSQliteMF/v17/Preview/ipch/AutoPCH/eb16522f0ac0b394/MULTISQLITEMF.ipch
 /.vs/MultiSQliteMF/v17/Preview/Browse.VC.db
+/MultiSQliteMF/Debug/MultiSQlite_CPP.pch
+/MultiSQliteMF/Debug/MF.pch

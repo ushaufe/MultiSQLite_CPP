@@ -24,7 +24,7 @@ public:
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_MULTISQLITEMF_DIALOG };
+	enum { IDD = IDD_MAINDIALOG };
 #endif
 
 	protected:

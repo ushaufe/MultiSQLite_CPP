@@ -1,1 +1,2 @@
-﻿  MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQliteMF.exe
+﻿C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(391,5): warning MSB8028: Das Zwischenverzeichnis (Debug\) enthält freigegebene Dateien aus einem anderen Projekt (MF.vcxproj, MultiSQliteMF.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+  MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQLite_CPP.exe

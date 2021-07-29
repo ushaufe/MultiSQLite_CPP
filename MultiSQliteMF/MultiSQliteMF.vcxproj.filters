@@ -92,5 +92,23 @@
     <Image Include="..\APP_TITLE.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\1920px-SQLite370.svg.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Sqlite.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Sqlite64..bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\CPP.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\CPP32.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\CPP48.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

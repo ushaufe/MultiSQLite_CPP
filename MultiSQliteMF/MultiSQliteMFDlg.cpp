@@ -11,8 +11,7 @@
 #include <iostream>
 #include <fileapi.h>
 #include <atlconv.h> // for CT2A
-#include "resource.h"		// main symbols
-
+#include "resource.h"		// main sy
 // Connection pooling
 // https://dev.yorhel.nl/doc/sqlaccess
 
@@ -71,7 +70,7 @@ END_MESSAGE_MAP()
 
 
 CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_MULTISQLITEMF_DIALOG, pParent)
+	: CDialogEx(IDD_MAINDIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -182,7 +181,9 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	
 	// https://forums.codeguru.com/showthread.php?63545-Static-text-font-size
 
-	
+	CRect rc;
+	GetWindowRect(&rc); // getting dialog coordinates
+	MoveWindow(rc.left, rc.top, 1200, 800);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -243,9 +244,6 @@ void CMultiSQliteMFDlg::OnPaint()
 
 		// Draw the icon
 		dc.DrawIcon(x, y, m_hIcon);
-
-
-
 	}
 	else
 	{
@@ -266,12 +264,14 @@ HCURSOR CMultiSQliteMFDlg::OnQueryDragIcon()
 
 void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 {	
+	lb = (CListBox*)GetDlgItem(IDC_LIST);
+	
 	// This connection is not to be used by threads
 	// It should simply simulate the easiest case (simple access to SQlite)
 	// In order to rule out errors in the more complex cases
 	
 	if (db != NULL) {
-		AfxMessageBox(L"Error: Already Connected!");
+		this->lb->AddString(L"Error: Already Connected!");
 		return;
 	}
 
@@ -287,13 +287,13 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 	if (PathFileExists(L"demo.db")) {
 		// only reading is possible
 		rc = sqlite3_open_v2("demo.db", &db, SQLITE_OPEN_READONLY, NULL);
-		SetWindowText(L"Read-Only");
+		this->lb->AddString(L"Mode: Read-Only");
 	}
 	else
 	{
 		// otherwise a second instance of the same application can be opened to read it
 		rc = sqlite3_open_v2("demo.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-		SetWindowText(L"Read + Write Access");
+		this->lb->AddString(L"Read + Write Access");
 	}
 	//DeleteFile(L"demo.db");
 	
@@ -305,11 +305,11 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 
 	if (rc)
 	{
-		AfxMessageBox(L"Error: Cant connect!");
+		this->lb->AddString(L"Error: Cant connect!");
 	}
 	else
 	{
-		AfxMessageBox(L"Connected");
+		this->lb->AddString(L"Connected");
 	}
 
 	
@@ -487,8 +487,6 @@ UINT CMultiSQliteMFDlg::ThreadProc2(LPVOID pParam)
 
 void CMultiSQliteMFDlg::OnBnClickedMultithread()
 {
-
-	lb  = (CListBox*)GetDlgItem(IDC_LIST);
 	
 	// TODO: Add your control notification handler code here
 	thread th1(t1);
@@ -735,10 +733,6 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn2(LPVOID pParam) {
 
 	return 0;
 }
-
-
-
-
 
 
 
