@@ -215,6 +215,13 @@
     <None Include="res\MultiSQliteMF.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\APP_TITLE.bmp" />
+    <Image Include="..\bitmap1.bmp" />
+    <Image Include="..\Connection2_Light2.bmp" />
+    <Image Include="..\ConnectionIcon.ico" />
+    <Image Include="..\Haufe.16bmp.bmp" />
+    <Image Include="..\Haufe.bmp" />
+    <Image Include="..\Haufe_Transparent.png" />
     <Image Include="res\MultiSQliteMF.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

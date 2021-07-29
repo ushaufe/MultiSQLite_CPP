@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fileapi.h>
 #include <atlconv.h> // for CT2A
-
+#include "resource.h"		// main symbols
 
 // Connection pooling
 // https://dev.yorhel.nl/doc/sqlaccess
@@ -85,6 +85,8 @@ CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
 	db0 = NULL;
 	db1 = NULL;
 	db2 = NULL;
+
+
 }
 
 void CMultiSQliteMFDlg::DoDataExchange(CDataExchange* pDX)
@@ -118,7 +120,12 @@ END_MESSAGE_MAP()
 
 BOOL CMultiSQliteMFDlg::OnInitDialog()
 {
+	//CFont font;
+	//font.CreatePointFont(16, _T("Arial"));
+	
 	CDialogEx::OnInitDialog();
+
+	
 
 	// https://www.geeksforgeeks.org/multithreading-in-cpp/
 
@@ -148,6 +155,34 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	CPaintDC   dc(this);
+	dc.SetBkColor(RGB(255, 255, 255));
+
+	SetWindowText(L"Haufe Multi-SQlite for C++");
+	
+
+	
+	CFont font;
+	font.CreateFont(
+		40,                        // nHeight
+		40,                         // nWidth
+		0,                         // nEscapement
+		0,                         // nOrientation
+		FW_NORMAL,                 // nWeight
+		TRUE,                     // bItalic
+		FALSE,                     // bUnderline
+		0,                         // cStrikeOut
+		ANSI_CHARSET,              // nCharSet
+		OUT_DEFAULT_PRECIS,        // nOutPrecision
+		CLIP_DEFAULT_PRECIS,       // nClipPrecision
+		DEFAULT_QUALITY,           // nQuality
+		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
+		_T("Microsoft Sans Serif"));                 // lpszFacename
+
+	
+	// https://forums.codeguru.com/showthread.php?63545-Static-text-font-size
+
+	
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -171,6 +206,27 @@ void CMultiSQliteMFDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CMultiSQliteMFDlg::OnPaint()
 {
+	
+	CPaintDC   dc(this);
+	CRect   rect;
+	
+	GetClientRect(&rect);
+	CDC   dcMem;
+	dcMem.CreateCompatibleDC(&dc);
+	
+	
+	CBitmap   bmpBackground;
+	bmpBackground.LoadBitmap(IDB_BACKGROUND);
+	// IDB_BITMAP corresponding ID is your own map   
+	BITMAP   bitmap;
+	bmpBackground.GetBitmap(&bitmap);
+	CBitmap* pbmpOld = dcMem.SelectObject(&bmpBackground);
+	dc.FillRect(rect, new CBrush());
+	dc.StretchBlt(0, 100, rect.Width(), rect.Height()-100, &dcMem, 0, 0,
+		bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
+	
+	dc.SetBkColor(RGB(255, 255, 255));
+
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
@@ -187,11 +243,16 @@ void CMultiSQliteMFDlg::OnPaint()
 
 		// Draw the icon
 		dc.DrawIcon(x, y, m_hIcon);
+
+
+
 	}
 	else
 	{
 		CDialogEx::OnPaint();
 	}
+
+
 }
 
 // The system calls this function to obtain the cursor to display while the user drags
@@ -241,12 +302,6 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 	const char *pSQL[STATEMENTS];
 	staticWnd = this;
 
-	
-
-	
-	//rc = sqlite3_open_v2("demo.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-	//rc = sqlite3_open("Data Source = demo.db; Read Only=True;", &db);
-	//rc = sqlite3_open("Data Source=demo.db;Version=3;Pooling=True;Max Pool Size=100;Read Only=True;", &db0);
 
 	if (rc)
 	{

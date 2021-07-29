@@ -1,13 +1,1 @@
-﻿  pch.cpp
-  MultiSQliteMF.cpp
-  MultiSQliteMFDlg.cpp
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(473): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(552): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(696): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(886): warning C4101: "rc": Unreferenzierte lokale Variable
-  Code wird generiert...
-  shell.c
-  sqlite3.c
-  Code wird generiert...
-  LINK : C:\Projects\SQlite4CPP\Debug\MultiSQliteMF.exe wurde nicht gefunden oder beim letzten inkrementellen Linkvorgang nicht erstellt; vollständiger Link wird durchgeführt.
-  MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQliteMF.exe
+﻿  MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQliteMF.exe
