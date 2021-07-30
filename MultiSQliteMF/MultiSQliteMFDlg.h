@@ -93,6 +93,15 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+	
+	void Connect();
+	boolean execQuery(CString strQuery);
+	boolean setAppID();
+	CString strDatabaseFile;
+	CString strAppID;
+
+	const CString DB_NAME = L"Demo_CPP.db";
+
 public:
 	afx_msg void OnBnClickedBtnConnect();
 	afx_msg void OnLbnSelchangeList();

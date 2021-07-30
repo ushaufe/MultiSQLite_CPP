@@ -185,6 +185,10 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	GetWindowRect(&rc); // getting dialog coordinates
 	MoveWindow(rc.left, rc.top, 1200, 800);
 
+	lb = (CListBox*)GetDlgItem(IDC_LIST);
+
+	Connect();
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -261,10 +265,169 @@ HCURSOR CMultiSQliteMFDlg::OnQueryDragIcon()
 }
 
 
+boolean CMultiSQliteMFDlg::execQuery(CString strQuery)
+{
+	CStringA strQueryA(strQuery);
+	const char* szQuery = strQueryA;
+
+
+	// The following cases handle access via multiple applications
+	// (Separate EXEs or separate DLLs)
+	// Only one application can use a SQlite-database exclusively for wriging
+	// Whereas multiple applications can use it for reading 
+	// even when locked from one app for wriging
+	int rc;
+
+	char* zErrMsg = 0;
+	rc = sqlite3_exec(db, szQuery, callback, 0, &zErrMsg);
+	if (rc != SQLITE_OK)
+	{
+		sqlite3_free(zErrMsg);
+		return false;
+	}
+	return true;
+}
+
+
+void CMultiSQliteMFDlg::Connect()
+{
+	char* szAppData;
+	size_t lenAppData;
+	errno_t err = _dupenv_s(&szAppData, &lenAppData, "APPDATA");
+
+	CString strAppData(szAppData);
+
+	// This connection is not to be used by threads
+	// It should simply simulate the easiest case (simple access to SQlite)
+	// In order to rule out errors in the more complex cases
+
+	if (db != NULL) {
+		this->lb->AddString(L"Error: Already Connected!");
+		return;
+	}
+
+	if (strAppData.GetLength() > 0) {
+		if (strAppData[strAppData.GetLength() - 1] != '\\')
+			strAppData += '\\';		
+	}
+
+	strAppData += CString("MultiSQlite") + CString("\\");
+
+	CStringW strwAppData(strAppData);
+	LPCWSTR ptrStrAppData = strwAppData;
+	CreateDirectory(ptrStrAppData, NULL);
+		
+	strDatabaseFile = strAppData + + DB_NAME;
+	//const char* szDatabaseFile = (LPCTSTR)strDatabaseFile;
+	
+	//char* c = strDatabaseFile.GetBuffer(strDatabaseFile.GetLength());
+	CStringA strDatabaseFileA(strDatabaseFile);
+	const char* szDatabaseFile = strDatabaseFileA;
+	
+	
+		// The following cases handle access via multiple applications
+	// (Separate EXEs or separate DLLs)
+	// Only one application can use a SQlite-database exclusively for wriging
+	// Whereas multiple applications can use it for reading 
+	// even when locked from one app for wriging
+	int rc;
+
+	/*
+	// hence if a file already exists
+	if (PathFileExists(strDatabaseFile)) {
+		// only reading is possible
+		rc = sqlite3_open_v2(szDatabaseFile, &db, SQLITE_OPEN_READONLY, NULL);
+		this->lb->AddString(L"Mode: Read-Only");
+	}
+	else
+	{
+		// otherwise a second instance of the same application can be opened to read it
+		rc = sqlite3_open_v2(szDatabaseFile, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+		this->lb->AddString(L"Read + Write Access");
+	}
+	//DeleteFile(L"demo.db");
+	*/
+	rc = sqlite3_open_v2(szDatabaseFile, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	this->lb->AddString(L"Read + Write Access");
+
+	const int STATEMENTS = 8;
+	char* zErrMsg = 0;
+	//const char* pSQL[STATEMENTS];
+	staticWnd = this;
+
+
+	if (rc != SQLITE_OK)
+	{
+		this->lb->AddString(L"Error: Cant connect!");
+	}
+	else
+	{
+		this->lb->AddString(L"Connected");
+		this->lb->AddString(L"Database: " + strDatabaseFile);
+	}
+
+	CString appName = CString("MultiSQLite_CPP");
+	
+	
+	execQuery( CString( "Create Table if NOT Exists version (id INTEGER PRIMARY KEY AUTOINCREMENT, revision INTEGER) ") );
+	execQuery( CString( "Create Table if NOT Exists testtable (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadID INTEGER, appID INTEGER) " ) );
+	execQuery( CString( "Create Table if NOT Exists apps (id INTEGER PRIMARY KEY AUTOINCREMENT, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  tsLastPoll TIMESTAMP DEFAULT CURRENT_TIMESTAMP, name TEXT) ") );
+	execQuery( CString( "insert into apps (name) values ('") + appName + CString( "')") ) ;
+	setAppID();
+	
+	// Create a table that can hold text-data along with the thread-id of the thread that created the data
+	CString strInsert;
+	strInsert.Format(_T("insert into testtable (appID,threadid,text) values (%s,0,'%s')"), strAppID, CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M")); // 
+	execQuery(strInsert);
+	execQuery(CString( "Delete from version") );
+	execQuery(CString( "insert into version (id,revision) values (0,1)") );
+
+}
+
+
+boolean CMultiSQliteMFDlg::setAppID() {
+	// https://wang.yuxuan.org/blog/item/2007/05/simple-sqlite-test-c-program-without-callbacks
+	//https://www.programmersought.com/article/22293267117/
+	//https://stackoverflow.com/questions/14743061/sqlite3-exec-without-callback/26463522
+
+	sqlite3_stmt* stmt = NULL;
+	int rc = sqlite3_prepare_v2(db, "SELECT id FROM apps order by id DESC LIMIT 1", -1, &stmt, NULL);
+	if (rc != SQLITE_OK)
+		return rc;
+
+	int rowCount = 0;
+	rc = sqlite3_step(stmt);
+	while (rc != SQLITE_DONE && rc != SQLITE_OK)
+	{
+		rowCount++;
+		int colCount = sqlite3_column_count(stmt);
+		for (int colIndex = 0; colIndex < colCount; colIndex++)
+		{
+			int type = sqlite3_column_type(stmt, colIndex);
+			const char* columnName = sqlite3_column_name(stmt, colIndex);
+			if (type == SQLITE_INTEGER)
+			{
+				int valInt = sqlite3_column_int(stmt, colIndex);
+				strAppID.Format(_T("%d"), valInt);
+				SetWindowText(  CString(_T("Haufe Multi-SQlite for C++ <ID: ") ) + strAppID + CString(">") ) ;
+				rc = sqlite3_finalize(stmt);
+				return true;
+			}
+			rc = sqlite3_finalize(stmt);
+			return false;
+		}
+		rc = sqlite3_finalize(stmt);
+		return false;
+	}
+	rc = sqlite3_finalize(stmt);
+	return false;
+
+}
+
 
 void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 {	
-	lb = (CListBox*)GetDlgItem(IDC_LIST);
+	
 	
 	// This connection is not to be used by threads
 	// It should simply simulate the easiest case (simple access to SQlite)
@@ -282,7 +445,8 @@ void CMultiSQliteMFDlg::OnBnClickedBtnConnect()
 	// Whereas multiple applications can use it for reading 
 	// even when locked from one app for wriging
 	int rc;
-	
+
+
 	// hence if a file already exists
 	if (PathFileExists(L"demo.db")) {
 		// only reading is possible

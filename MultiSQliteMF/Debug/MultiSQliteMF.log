@@ -1,2 +1,7 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(391,5): warning MSB8028: Das Zwischenverzeichnis (Debug\) enthält freigegebene Dateien aus einem anderen Projekt (MF.vcxproj, MultiSQliteMF.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+  MultiSQliteMFDlg.cpp
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(690): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(769): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(909): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1099): warning C4101: "rc": Unreferenzierte lokale Variable
   MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQLite_CPP.exe
