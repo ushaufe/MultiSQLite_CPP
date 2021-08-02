@@ -5,7 +5,6 @@
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
-#define IDD_MULTISQLITEMF_DIALOG        102
 #define IDB_BACKGROUND                  130
 #define IDR_MAINFRAME                   131
 #define IDB_HAUFE                       136
@@ -21,6 +20,7 @@
 #define IDC_Multithread                 1002
 #define BTN_MFC_MULTITHREAD             1003
 #define BTN_Connect4SQLite              1005
+#define BTN_SingleInsert                1005
 #define BTN_HammerInSQL                 1006
 #define BTN_ShowDBContents              1007
 #define IDC_SHOW_DB_COUNT_SINGLE        1008
@@ -30,16 +30,16 @@
 #define BTN_MultiCount_Once             1012
 #define DB_Flicker_Counn                1013
 #define BTN_FlickerCount                1013
-#define IDB_SQLITE_PIC                  1019
 #define IDC_CPP_PIC                     1020
+#define IDLB_APPLICATIONS               1026
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        153
+#define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1022
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

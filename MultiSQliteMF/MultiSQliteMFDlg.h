@@ -10,7 +10,7 @@
 #pragma once
 #include "sqlite/sqlite3.h"
 
-class CMyObject : public CObject {
+class CFlickerObject : public CObject {
 
 };
 
@@ -26,6 +26,9 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_MAINDIALOG };
 #endif
+
+	static bool bFlickerLock1;
+	static bool bFlickerLock2;
 
 	protected:
 	// A handle to the ListBox must be kept static
@@ -51,9 +54,6 @@ public:
 
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	
-	// Each thread has an own function
-	static void t1();
-	static void t2();
 	
 	// A Window-handle must be kept 
 	// so that the different threads have access to the GUI
@@ -61,10 +61,8 @@ public:
 	// the instance-contect
 	static CWnd* staticWnd;
 
-	CMyObject* pNewThreadObject;
+	CFlickerObject* pFlickerObject;
 
-	static UINT ThreadProc1(LPVOID pParam);
-	static UINT ThreadProc2(LPVOID pParam);
 
 	static UINT ThreadSQLHammerIn1(LPVOID pParam);
 	static UINT ThreadSQLHammerIn2(LPVOID pParam);
@@ -82,6 +80,9 @@ protected:
 	// This method is called automatically after a "select from" database operation
 	static int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
+
+	static int UpdateApplications(void* NotUsed, int argc, char** argv, char** azColName);
+
 	// This method is called automatically after a "select from" database operation
 	// It fills the listbox-object and is called simultaneously from multiple threads
 	static int callback_flicker(void *NotUsed, int argc, char **argv, char **azColName);
@@ -97,17 +98,16 @@ protected:
 	void Connect();
 	boolean execQuery(CString strQuery);
 	boolean setAppID();
+	bool getSQLInt(CString strSQL,int &nInt);
 	CString strDatabaseFile;
-	CString strAppID;
+	static CString strAppID;
 
-	const CString DB_NAME = L"Demo_CPP.db";
+	const CString DB_NAME = L"MultiSQlite.db";
 
 public:
 	afx_msg void OnBnClickedBtnConnect();
-	afx_msg void OnLbnSelchangeList();
-	afx_msg void OnBnClickedMultithread();
-	afx_msg void OnBnClickedMfcMultithread();
-	afx_msg void OnBnClickedConnect4sqlite();
+	afx_msg void OnLbnSelchangeList();		
+	
 	afx_msg void OnBnClickedHammerinsql();
 	afx_msg void OnBnClickedShowdbcontents();
 	afx_msg void OnBnClickedShowDbCountSingle();
@@ -117,6 +117,8 @@ public:
 	afx_msg void OnBnClickedSqlmultihammer();
 	afx_msg void OnBnClickedMulticountOnce();
 	afx_msg void OnBnClickedFlickercount();
+	afx_msg void OnBnClickedSingleinsert();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
 
 
