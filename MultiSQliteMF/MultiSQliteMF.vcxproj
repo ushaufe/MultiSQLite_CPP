@@ -196,6 +196,7 @@
     <ClInclude Include="sqlite\sqlite3.h" />
     <ClInclude Include="sqlite\sqlite3ext.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MultiSQliteMF.cpp" />
@@ -206,8 +207,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Quelle.cpp" />
+    <ClCompile Include="Quelle1.cpp" />
     <ClCompile Include="sqlite\shell.c" />
     <ClCompile Include="sqlite\sqlite3.c" />
+    <ClCompile Include="VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MultiSQliteMF.rc" />

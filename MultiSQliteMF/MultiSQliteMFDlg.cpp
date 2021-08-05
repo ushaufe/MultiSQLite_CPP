@@ -12,6 +12,7 @@
 #include <fileapi.h>
 #include <atlconv.h> // for CT2A
 #include "resource.h"		// main sy
+//#include "GlobalFunctions.h"
 // Connection pooling
 // https://dev.yorhel.nl/doc/sqlaccess
 
@@ -161,7 +162,7 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	CPaintDC   dc(this);
 	dc.SetBkColor(RGB(255, 255, 255));
 
-	SetWindowText(L"Haufe Multi-SQlite for C++");
+	SetWindowText(APP_NAME);
 	
 
 	
@@ -191,7 +192,13 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 
 	lb = (CListBox*)GetDlgItem(IDC_LIST);
 
+	lb->AddString(CString( APP_NAME ));
+	lb->AddString(CString("Version: ") + GetAppVersion(GetAppPath()));
+	CStatic* lblVersion =  (CStatic*)GetDlgItem(IDC_VERSION);
+	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath());
+	lblVersion->SetWindowText( strVersion);	
 	Connect();
+	
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -292,9 +299,8 @@ boolean CMultiSQliteMFDlg::execQuery(CString strQuery)
 	return true;
 }
 
-
 void CMultiSQliteMFDlg::Connect()
-{
+{		
 	char* szAppData;
 	size_t lenAppData;
 	errno_t err = _dupenv_s(&szAppData, &lenAppData, "APPDATA");
@@ -371,10 +377,12 @@ void CMultiSQliteMFDlg::Connect()
 		this->lb->AddString(L"Database: " + strDatabaseFile);
 	}
 
+	CString strRevision;
+	strRevision.Format(_T("%d"), DB_REVISION);
 	int nDBRevision = -1;
 	if (getSQLInt(_T("Select revision from version  order by id DESC LIMIT 1"), nDBRevision))
 	{
-		if (nDBRevision <= 0)
+		if (nDBRevision < DB_REVISION)
 		{
 			this->lb->AddString(L"Error: Old database....");
 			this->lb->AddString(L"       Deleting tables....");
@@ -408,7 +416,7 @@ void CMultiSQliteMFDlg::Connect()
 	
 	
 	execQuery( CString( "Create Table if NOT Exists version (id INTEGER PRIMARY KEY AUTOINCREMENT, revision INTEGER) ") );
-	execQuery( CString( "Create Table if NOT Exists testtable (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadID INTEGER, appID INTEGER) " ) );
+	execQuery( CString( "Create Table if NOT Exists testtable (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadID INTEGER, appID INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP) " ) );
 	execQuery( CString( "Create Table if NOT Exists apps (id INTEGER PRIMARY KEY AUTOINCREMENT, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  tsLastPoll TIMESTAMP DEFAULT CURRENT_TIMESTAMP, name TEXT) ") );
 	execQuery( CString( "insert into apps (name) values ('") + appName + CString( "')") ) ;
 	setAppID();
@@ -418,7 +426,7 @@ void CMultiSQliteMFDlg::Connect()
 	strInsert.Format(_T("insert into testtable (appID,threadid,text) values (%s,0,'%s')"), strAppID, CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M")); // 
 	execQuery(strInsert);
 	execQuery(CString( "Delete from version") );
-	execQuery(CString( "insert into version (id,revision) values (0,1)") );
+	execQuery(CString( "insert into version (id,revision) values (0,") + strRevision + CString(")"));
 
 	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
 }
@@ -940,9 +948,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 			char* szSelect = "Select count(*) as Count_Thread1_2 from testtable where threadID=0;Select count(*) as Count_Thread2_2 from testtable  where threadID=1;Select count(*) as Count_Thread3_2 from testtable  where threadID=2";
 			rc = sqlite3_exec(db, szSelect, callback_flicker, 0, &zErrMsg);
 		}
-	}
-	
-
+	}	
 	return 0;
 }
 

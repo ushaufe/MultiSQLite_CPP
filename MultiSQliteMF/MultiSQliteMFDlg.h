@@ -9,6 +9,7 @@
 
 #pragma once
 #include "sqlite/sqlite3.h"
+#include "VersionInfo.h"
 
 class CFlickerObject : public CObject {
 
@@ -103,6 +104,8 @@ protected:
 	static CString strAppID;
 
 	const CString DB_NAME = L"MultiSQlite.db";
+	const CString APP_NAME = L"Haufe Multi - SQlite for C++";
+	const int DB_REVISION = 2;
 
 public:
 	afx_msg void OnBnClickedBtnConnect();
