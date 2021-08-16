@@ -37,6 +37,8 @@ sqlite3* CMultiSQliteMFDlg::db0;
 sqlite3* CMultiSQliteMFDlg::db1;
 sqlite3* CMultiSQliteMFDlg::db2;
 
+bool CMultiSQliteMFDlg::bPollock;
+
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialogEx
@@ -92,6 +94,8 @@ CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
 
 	bFlickerLock1 = false;
 	bFlickerLock2 = false;
+
+	bPollock = false;
 }
 
 void CMultiSQliteMFDlg::DoDataExchange(CDataExchange* pDX)
@@ -994,12 +998,18 @@ void CMultiSQliteMFDlg::OnBnClickedSingleinsert()
 
 void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	if (bPollock)
+		return;
+	
+	bPollock = true;
+
 	CListBox* lbApplications = (CListBox*)(staticWnd->GetDlgItem(IDLB_APPLICATIONS));
 	lbApplications->ResetContent();	
 	int rc;
 	if (db != NULL)
 	{
-		execQuery(CString(_T("update apps set tsLastPoll = CURRENT_TIMESTAMP where id = ")) + strAppID);
+		execQuery(CString(_T("update apps set tsLastPoll = CURRENT_TIMESTAMP, isActive=1 where id = ")) + strAppID);
+		
 
 		char* zErrMsg = 0;
 		char* szSelect = "Select name || ' <ID:' || id || '>' from apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
@@ -1007,6 +1017,8 @@ void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 		rc = sqlite3_exec(db, szSelect, UpdateApplications, 0, &zErrMsg);		
 	}
 	
+	bPollock = false;
+
 	CDialogEx::OnTimer(nIDEvent);
 }
 

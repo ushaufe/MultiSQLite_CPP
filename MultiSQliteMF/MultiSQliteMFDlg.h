@@ -31,6 +31,8 @@ public:
 	static bool bFlickerLock1;
 	static bool bFlickerLock2;
 
+	static bool bPollock;
+
 	protected:
 	// A handle to the ListBox must be kept static
 	// so that the different threads have access to the GUI
