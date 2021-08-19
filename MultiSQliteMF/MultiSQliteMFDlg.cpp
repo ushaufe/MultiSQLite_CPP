@@ -126,6 +126,8 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_BN_CLICKED(BTN_FlickerCount, &CMultiSQliteMFDlg::OnBnClickedFlickercount)	
 	ON_WM_TIMER()	
 	ON_WM_CLOSE()
+	ON_BN_CLICKED(BTN_StartThreadsSingleCon, &CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon)
+	ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -137,7 +139,11 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	//font.CreatePointFont(16, _T("Arial"));
 	
 	CDialogEx::OnInitDialog();
-
+	CScrollBar* scrollBarNumberThreads = (CScrollBar*)GetDlgItem(IDC_SLIDER_NUMBER_THREADS);
+	nNumberThreads = 1;
+	scrollBarNumberThreads->SetScrollRange(1, 20, true);
+	scrollBarNumberThreads->SetScrollPos(nNumberThreads);
+	ShowNumberOfThreads();
 	
 
 	// https://www.geeksforgeeks.org/multithreading-in-cpp/
@@ -207,7 +213,7 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath());
 	lblVersion->SetWindowText( strVersion);	
 	Connect();
-	
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -224,6 +230,8 @@ void CMultiSQliteMFDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
+
+
 
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
@@ -728,6 +736,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
 
 	int threadID = ++maxThreadID;	
+	
 
 	char* zErrMsg = 0;
 	int rc;
@@ -740,25 +749,40 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 		return 1;
 	}
 
+	CString strMessage;
+	strMessage.Format(_T("  Start Thread #%d"), threadID);
+	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
+
 	CString strStartThread;
 	strStartThread.Format(_T("insert into threads (threadid,appID,isActive) values (%d,'%s',1)"), threadID, strAppID);
 	CT2A szStartThread(strStartThread.GetString());
 	rc = sqlite3_exec(db, szStartThread, callback, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
 	{
+		strMessage.Format(_T("  Error starting Thread #%d"), threadID);
+		((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 		return 1;
 	}
+	
 
+	
 	CString strSQLInsert;
-	for (int i = 0; i < 1000; i++) {
+	//for (int i = 0; i < 1000; i++) {
+	while (((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())
+	{
 		strSQLInsert.Format(_T("insert into testtable (threadid,text,appID) values (%d,'T1: TID:1 / d',%s)"), threadID, strAppID);
 		CT2A szSQLInsert(strSQLInsert.GetString());
 		rc = sqlite3_exec(db, szSQLInsert, callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK)
 		{
-			return 1;
+			strMessage.Format(_T("  Error executing Thread #%d"), threadID);
+			((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
+			//return 1;
 		}
 	}
+
+	strMessage.Format(_T("  Stop Thread #%d"), threadID);
+	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 
 	CString strStopThread;
 	strStopThread.Format(_T("update threads set isActive=0 where threadID=%d and appID='%s' "), threadID, strAppID);
@@ -766,8 +790,13 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	rc = sqlite3_exec(db, szStopThread, callback, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
 	{
+		strMessage.Format(_T("  Error stopping Thread #%d"), threadID);
+		((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 		return 1;
 	}
+
+	strMessage.Format(_T("  Thread #%d Terminated"), threadID);
+	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 
 	return 0;
 }
@@ -1079,4 +1108,74 @@ void CMultiSQliteMFDlg::OnClose()
 	}
 
 	CDialogEx::OnClose();
+}
+
+
+void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
+{
+	lb = (CListBox*)GetDlgItem(IDC_LIST);
+
+	if (!((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())
+	{
+		lb->AddString(_T("Terminate all Threads..."));
+		return;
+	}
+
+	pFlickerObject = new CFlickerObject();
+	CString strStartThreads;
+	strStartThreads.Format(_T("Start %d threads...."),nNumberThreads);
+	lb->AddString(strStartThreads);
+	for (int i=0;i<nNumberThreads;i++)
+		AfxBeginThread(ThreadSQLHammerIn, pFlickerObject);	
+	strStartThreads.Format(_T("...%d threads started"), nNumberThreads);
+	lb->AddString(strStartThreads);
+}
+
+
+void CMultiSQliteMFDlg::ShowNumberOfThreads()
+{
+	CStatic* lblScrollBar = (CStatic*)GetDlgItem(IDC_LBL_NUMBER_THREADS);
+	CString strValue;
+	strValue.Format(_T("Number of Threads: %d"), nNumberThreads);
+	lblScrollBar->SetWindowTextW(strValue);
+}
+
+void CMultiSQliteMFDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: Fügen Sie hier Ihren Meldungshandlercode ein, und/oder benutzen Sie den Standard.
+	// https://programming.vip/docs/an-example-of-window-scrolling-using-scrollbars-windows-mobile-mfc.html
+
+	CScrollBar* scrollBarNumberThreads = (CScrollBar*)GetDlgItem(IDC_SLIDER_NUMBER_THREADS);
+
+	if (pScrollBar == scrollBarNumberThreads) {		
+		
+		switch (nSBCode)
+		{
+			case SB_THUMBPOSITION:
+			case SB_THUMBTRACK:
+			case SB_BOTTOM:
+			case SB_TOP:
+			case SB_LINEUP:
+			case SB_LINEDOWN :
+			case SB_PAGEUP:
+			case SB_PAGEDOWN:			
+			{
+				// TODO: Add your message handler code here and/or call default				
+				SCROLLINFO scrollinfo;
+				GetScrollInfo(SB_HORZ, &scrollinfo);
+				int& nPosFrom = scrollinfo.nPos;
+				int nPosTo = nPos;	
+				if (nPosTo <= 0)
+					nPosTo = 1;
+				nNumberThreads = nPosTo;
+				ShowNumberOfThreads();
+			}	
+			default:
+				break;
+		}
+			
+		CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
+	}
+
+
 }

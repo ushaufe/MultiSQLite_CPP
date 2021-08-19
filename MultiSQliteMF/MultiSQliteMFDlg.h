@@ -67,6 +67,7 @@ public:
 	static CWnd* staticWnd;
 
 	CFlickerObject* pFlickerObject;
+	int nNumberThreads;
 
 
 	static UINT ThreadSQLHammerIn(LPVOID pParam);	
@@ -81,6 +82,8 @@ public:
 protected:
 	HICON m_hIcon;
 	
+	void ShowNumberOfThreads();
+
 	// This method is called automatically after a "select from" database operation
 	static int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
@@ -90,6 +93,7 @@ protected:
 	// This method is called automatically after a "select from" database operation
 	// It fills the listbox-object and is called simultaneously from multiple threads
 	static int callback_flicker(void *NotUsed, int argc, char **argv, char **azColName);
+
 	
 	
 	// Generated message map functions
@@ -127,6 +131,8 @@ public:
 	afx_msg void OnBnClickedSingleinsert();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnClose();
+	afx_msg void OnBnClickedStartthreadssinglecon();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 };
 
 
