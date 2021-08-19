@@ -33,6 +33,8 @@ public:
 
 	static bool bPollock;
 
+	static long maxThreadID;
+
 	protected:
 	// A handle to the ListBox must be kept static
 	// so that the different threads have access to the GUI
@@ -67,8 +69,7 @@ public:
 	CFlickerObject* pFlickerObject;
 
 
-	static UINT ThreadSQLHammerIn1(LPVOID pParam);
-	static UINT ThreadSQLHammerIn2(LPVOID pParam);
+	static UINT ThreadSQLHammerIn(LPVOID pParam);	
 
 	static UINT ThreadSQLFlicker1(LPVOID pParam);
 	static UINT ThreadSQLFlicker2(LPVOID pParam);
@@ -102,6 +103,7 @@ protected:
 	boolean execQuery(CString strQuery);
 	boolean setAppID();
 	bool getSQLInt(CString strSQL,int &nInt);
+	bool getDBVersion(CString& strDBVersion);
 	CString strDatabaseFile;
 	static CString strAppID;
 
@@ -124,6 +126,7 @@ public:
 	afx_msg void OnBnClickedFlickercount();
 	afx_msg void OnBnClickedSingleinsert();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnClose();
 };
 
 

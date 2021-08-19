@@ -1,11 +1,12 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(391,5): warning MSB8028: Das Zwischenverzeichnis (Debug\) enthält freigegebene Dateien aus einem anderen Projekt (MF.vcxproj, MultiSQliteMF.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
   MultiSQliteMFDlg.cpp
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(602): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(748): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(906): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(910): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(916): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(941): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(945): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(964): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(642): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(786): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(944): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(948): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(954): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(979): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(983): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1002): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1074): warning C4101: "rc": Unreferenzierte lokale Variable
   MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQLite_CPP.exe
