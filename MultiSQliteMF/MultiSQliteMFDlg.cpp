@@ -32,7 +32,7 @@ bool CMultiSQliteMFDlg::bFlickerLock1;
 bool CMultiSQliteMFDlg::bFlickerLock2;
 
 CListBox* CMultiSQliteMFDlg::lb;
-sqlite3* CMultiSQliteMFDlg::db;
+sqlite3* CMultiSQliteMFDlg::dbx;
 sqlite3* CMultiSQliteMFDlg::db0;
 sqlite3* CMultiSQliteMFDlg::db1;
 sqlite3* CMultiSQliteMFDlg::db2;
@@ -89,7 +89,7 @@ CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
 
 	// The constructor sets all instances of connections to NULL
 	// so that it can be checked against NULL if a connection already exists
-	db = NULL;
+	dbx = NULL;  
 	db0 = NULL;
 	db1 = NULL;
 	db2 = NULL;
@@ -249,7 +249,7 @@ void CMultiSQliteMFDlg::OnPaint()
 	
 	
 	CBitmap   bmpBackground;
-	bmpBackground.LoadBitmap(IDB_BACKGROUND);
+	bmpBackground.LoadBitmap(IDB_BACKGROUND2);
 	// IDB_BITMAP corresponding ID is your own map   
 	BITMAP   bitmap;
 	bmpBackground.GetBitmap(&bitmap);
@@ -307,13 +307,20 @@ boolean CMultiSQliteMFDlg::execQuery(CString strQuery)
 	int rc;
 
 	char* zErrMsg = 0;
-	rc = sqlite3_exec(db, szQuery, callback, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
+	// our CSingleLock object. 
+	CSingleLock dbLock(&mutexDB);
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		sqlite3_free(zErrMsg);
-		return false;
+		rc = sqlite3_exec(dbx, szQuery, callback, 0, &zErrMsg);
+		if (rc != SQLITE_OK)
+		{
+			sqlite3_free(zErrMsg);
+			return false;
+		}
+		return true;
 	}
-	return true;
+	dbLock.Unlock();
 }
 
 void CMultiSQliteMFDlg::Connect()
@@ -328,7 +335,8 @@ void CMultiSQliteMFDlg::Connect()
 	// It should simply simulate the easiest case (simple access to SQlite)
 	// In order to rule out errors in the more complex cases
 
-	if (db != NULL) {
+	
+	if (dbx != NULL) {
 		this->lb->AddString(L"Error: Already Connected!");
 		return;
 	}
@@ -374,7 +382,7 @@ void CMultiSQliteMFDlg::Connect()
 	}
 	//DeleteFile(L"demo.db");
 	*/
-	rc = sqlite3_open_v2(szDatabaseFile, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	rc = sqlite3_open_v2(szDatabaseFile, &dbx, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 	this->lb->AddString(L"Read + Write Access");
 
 	const int STATEMENTS = 8;
@@ -385,7 +393,7 @@ void CMultiSQliteMFDlg::Connect()
 
 	if (rc != SQLITE_OK)
 	{
-		db = NULL;
+		dbx = NULL;
 		this->lb->AddString(L"Error: Cant connect!");
 	}
 	else
@@ -422,21 +430,22 @@ void CMultiSQliteMFDlg::Connect()
 	if (bRecreateDB)
 	{
 		this->lb->AddString(L"       Disconnect....");
-		sqlite3_close(db);
+		sqlite3_close(dbx);
 		
 		{
 			this->lb->AddString(L"       Deleting Database....");
 			if (!DeleteFile(strDatabaseFile))
 			{
 				this->lb->AddString(L"Error: Old Database could not have been deleted.");
+				dbx = NULL;
 				return;
 			}
 		}
 		this->lb->AddString(L"       Recreate database and connect....");
-		rc = sqlite3_open_v2(szDatabaseFile, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+		rc = sqlite3_open_v2(szDatabaseFile, &dbx, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 		if (rc != SQLITE_OK)
 		{
-			db = NULL;
+			dbx = NULL;
 			this->lb->AddString(L"Error: Cant connect!");
 		}
 		else
@@ -446,7 +455,7 @@ void CMultiSQliteMFDlg::Connect()
 		}
 	}
 
-	if (db == NULL) {
+	if (dbx == NULL) {
 		this->lb->AddString(L"Error: Database is not working");
 		return;
 	}
@@ -487,7 +496,7 @@ bool  CMultiSQliteMFDlg::getDBVersion(CString& strDBVersion)
 	try
 	{
 		sqlite3_stmt* stmt = NULL;
-		int rc = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+		int rc = sqlite3_prepare_v2(dbx, szSQL, -1, &stmt, NULL);
 		if (rc != SQLITE_OK)
 			return false;
 
@@ -531,36 +540,48 @@ boolean CMultiSQliteMFDlg::setAppID() {
 	//https://stackoverflow.com/questions/14743061/sqlite3-exec-without-callback/26463522
 
 	sqlite3_stmt* stmt = NULL;
-	int rc = sqlite3_prepare_v2(db, "SELECT id FROM apps order by id DESC LIMIT 1", -1, &stmt, NULL);
-	if (rc != SQLITE_OK)
-		return rc;
-
-	int rowCount = 0;
-	rc = sqlite3_step(stmt);
-	while (rc != SQLITE_DONE && rc != SQLITE_OK)
+	CSingleLock dbLock(&mutexDB);
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		rowCount++;
-		int colCount = sqlite3_column_count(stmt);
-		for (int colIndex = 0; colIndex < colCount; colIndex++)
+		int rc = sqlite3_prepare_v2(dbx, "SELECT id FROM apps order by id DESC LIMIT 1", -1, &stmt, NULL);
+		if (rc != SQLITE_OK)
 		{
-			int type = sqlite3_column_type(stmt, colIndex);
-			const char* columnName = sqlite3_column_name(stmt, colIndex);
-			if (type == SQLITE_INTEGER)
+			dbLock.Unlock();
+			return rc;
+		}
+
+		int rowCount = 0;
+		rc = sqlite3_step(stmt);
+		while (rc != SQLITE_DONE && rc != SQLITE_OK)
+		{
+			rowCount++;
+			int colCount = sqlite3_column_count(stmt);
+			for (int colIndex = 0; colIndex < colCount; colIndex++)
 			{
-				int valInt = sqlite3_column_int(stmt, colIndex);
-				strAppID.Format(_T("%d"), valInt);
-				SetWindowText(  CString(_T("Haufe Multi-SQlite for C++ <ID: ") ) + strAppID + CString(">") ) ;
+				int type = sqlite3_column_type(stmt, colIndex);
+				const char* columnName = sqlite3_column_name(stmt, colIndex);
+				if (type == SQLITE_INTEGER)
+				{
+					int valInt = sqlite3_column_int(stmt, colIndex);
+					strAppID.Format(_T("%d"), valInt);
+					SetWindowText(CString(_T("Haufe Multi-SQlite for C++ <ID: ")) + strAppID + CString(">"));
+					rc = sqlite3_finalize(stmt);
+					dbLock.Unlock();
+					return true;
+				}
 				rc = sqlite3_finalize(stmt);
-				return true;
+				dbLock.Unlock();
+				return false;
 			}
 			rc = sqlite3_finalize(stmt);
+			dbLock.Unlock();
 			return false;
 		}
 		rc = sqlite3_finalize(stmt);
+		dbLock.Unlock();
 		return false;
 	}
-	rc = sqlite3_finalize(stmt);
-	return false;
 }
 
 
@@ -653,7 +674,7 @@ void CMultiSQliteMFDlg::OnBnClickedHammerinsql()
 	
 
 	int rc;
-	if (db == NULL) {
+	if (dbx == NULL) {
 		this->lb->AddString(_T("DB NOT YET CONNECTED."));
 		return;
 	}
@@ -662,11 +683,16 @@ void CMultiSQliteMFDlg::OnBnClickedHammerinsql()
 	for (int i = 0; i < nNumberInserts; i++) {
 		strSQLInsert.Format(_T("insert into testtable (threadid,text,appid) values (0,'T1: TID:0 / %d',%s)"), i, strAppID);
 		CT2A szSQLInsert(strSQLInsert.GetString());
-		rc = sqlite3_exec(db, szSQLInsert, callback, 0, &zErrMsg);
+		CSingleLock dbLock(&mutexDB);
+		dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+		if (dbLock.IsLocked())
+		rc = sqlite3_exec(dbx, szSQLInsert, callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK)
 		{
 			return;
+			dbLock.Unlock();
 		}
+		dbLock.Unlock();
 	}
 	
 	CString strMessage;
@@ -679,20 +705,31 @@ void CMultiSQliteMFDlg::OnBnClickedHammerinsql()
 void CMultiSQliteMFDlg::OnBnClickedShowdbcontents()
 {
 	int rc;
-	if (db == NULL) {
-		this->lb->AddString(_T("DB NOT YET CONNECTED."));
-		return;
+	CSingleLock dbLock(&mutexDB);
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
+	{
+		if (dbx == NULL)
+		{
+			this->lb->AddString(_T("DB NOT YET CONNECTED."));
+			dbLock.Unlock();
+			return;
+		}
 	}
+	dbLock.Unlock();
 
 	char *zErrMsg = 0;
 	char* szSelect = "Select * from testtable";
-	rc = sqlite3_exec(db, szSelect, callback, 0, &zErrMsg);
 	
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
+	rc = sqlite3_exec(dbx, szSelect, callback, 0, &zErrMsg);	
 	if (rc != SQLITE_OK)
 	{
-		sqlite3_close(db);
-		db = NULL;
+		sqlite3_close(dbx);
+		dbx = NULL;
 		this->lb->AddString(_T("Couldn't read from database") + CString(zErrMsg));
+		dbLock.Unlock();
 		return;
 	}
 	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
@@ -702,23 +739,36 @@ void CMultiSQliteMFDlg::OnBnClickedShowdbcontents()
 void CMultiSQliteMFDlg::OnBnClickedShowDbCountSingle()
 {
 	int rc;
-	if (db == NULL) {
-		this->lb->AddString(_T("DB NOT YET CONNECTED."));
-		return;
+	CSingleLock dbLock(&mutexDB);
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
+	{
+		if (dbx == NULL) {
+			this->lb->AddString(_T("DB NOT YET CONNECTED."));
+			return;
+		}
 	}
+	dbLock.Unlock();
 
 	char *zErrMsg = 0;
 	char* szSelect = "Select count(*) as Count_Thread_GUI from testtable where threadID=0;Select count(*) as Count_Thread1 from testtable  where threadID=1;Select count(*) as Count_Thread2 from testtable  where threadID=2";
-	rc = sqlite3_exec(db, szSelect, callback, 0, &zErrMsg);
-
-	if (rc != SQLITE_OK)
+	
+	
+	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		sqlite3_close(db);
-		db = NULL;
-		this->lb->AddString(_T("Couldn't read from database") + CString(zErrMsg));
-		return;
+		rc = sqlite3_exec(dbx, szSelect, callback, 0, &zErrMsg);
+		if (rc != SQLITE_OK)
+		{
+			sqlite3_close(dbx);
+			dbx = NULL;
+			this->lb->AddString(_T("Couldn't read from database") + CString(zErrMsg));
+			dbLock.Unlock();
+			return;
+		}
 	}
 	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
+	dbLock.Unlock();
 }
 
 
@@ -745,7 +795,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
 
-	if (db == NULL) {
+	if (dbx == NULL) {
 		return 1;
 	}
 
@@ -756,14 +806,20 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	CString strStartThread;
 	strStartThread.Format(_T("insert into threads (threadid,appID,isActive) values (%d,'%s',1)"), threadID, strAppID);
 	CT2A szStartThread(strStartThread.GetString());
-	rc = sqlite3_exec(db, szStartThread, callback, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
+	CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+	dbLock.Lock( ((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		strMessage.Format(_T("  Error starting Thread #%d"), threadID);
-		((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
-		return 1;
+		rc = sqlite3_exec(dbx, szStartThread, callback, 0, &zErrMsg);
+		if (rc != SQLITE_OK)
+		{
+			strMessage.Format(_T("  Error starting Thread #%d"), threadID);
+			((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
+			dbLock.Unlock();
+			return 1;
+		}
 	}
-	
+	dbLock.Unlock();
 
 	
 	CString strSQLInsert;
@@ -772,13 +828,19 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	{
 		strSQLInsert.Format(_T("insert into testtable (threadid,text,appID) values (%d,'T1: TID:1 / d',%s)"), threadID, strAppID);
 		CT2A szSQLInsert(strSQLInsert.GetString());
-		rc = sqlite3_exec(db, szSQLInsert, callback, 0, &zErrMsg);
-		if (rc != SQLITE_OK)
+		CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+		dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+		if (dbLock.IsLocked())
 		{
-			strMessage.Format(_T("  Error executing Thread #%d"), threadID);
-			((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
-			//return 1;
+			rc = sqlite3_exec(dbx, szSQLInsert, callback, 0, &zErrMsg);
+			if (rc != SQLITE_OK)
+			{
+				strMessage.Format(_T("  Error during execution of Thread #%d"), threadID);
+				((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
+				//return 1;
+			}
 		}
+		dbLock.Unlock();
 	}
 
 	strMessage.Format(_T("  Stop Thread #%d"), threadID);
@@ -787,13 +849,20 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	CString strStopThread;
 	strStopThread.Format(_T("update threads set isActive=0 where threadID=%d and appID='%s' "), threadID, strAppID);
 	CT2A szStopThread(strStopThread.GetString());
-	rc = sqlite3_exec(db, szStopThread, callback, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
+	
+	dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		strMessage.Format(_T("  Error stopping Thread #%d"), threadID);
-		((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
-		return 1;
+		rc = sqlite3_exec(dbx, szStopThread, callback, 0, &zErrMsg);
+		if (rc != SQLITE_OK)
+		{
+			strMessage.Format(_T("  Error stopping Thread #%d"), threadID);
+			((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
+			dbLock.Unlock();
+			return 1;
+		}
 	}
+	dbLock.Unlock();
 
 	strMessage.Format(_T("  Thread #%d Terminated"), threadID);
 	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
@@ -838,7 +907,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 	if (rc != SQLITE_OK)
 	{
 		sqlite3_close(db0);
-		db = NULL;
+		db0 = NULL;
 		AfxMessageBox(CString("Error Creating: ") + CString(zErrMsg));
 		sqlite3_free(zErrMsg);		
 	}
@@ -848,7 +917,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 	if (rc)
 	{
 		sqlite3_close(db1);
-		db = NULL;
+		db1 = NULL;
 		strOut = strOut + CString(" ") + CString("Error: Cant connect (1)!");		
 	}
 	else
@@ -861,7 +930,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 	if (rc)
 	{
 		sqlite3_close(db2);
-		db = NULL;
+		db2 = NULL;
 		strOut = strOut + CString(" ") + CString("Error: Cant connect (2)!");		
 	}
 	else
@@ -965,7 +1034,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 
 	char *zErrMsg = 0;
 	int rc;
-	if (db == NULL) {
+	if (dbx == NULL) {
 		return 1;
 	}
 
@@ -983,7 +1052,14 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 			lLastFlicker = GetTickCount64();
 			bFlickerLock1 = true;
 			char* szSelect = "Select count(*) as Count_Thread1_1 from testtable where threadID=0; Select count(*) as Count_Thread2_1 from testtable  where threadID=1; Select count(*) as Count_Thread3_1 from testtable  where threadID=2";
-			rc = sqlite3_exec(db, szSelect, callback_flicker, 0, &zErrMsg);
+			
+			CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+			dbLock.Lock( ((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+			if (dbLock.IsLocked())
+			{
+				rc = sqlite3_exec(dbx, szSelect, callback_flicker, 0, &zErrMsg);
+			}
+			dbLock.Unlock();
 		}
 	}
 
@@ -1000,7 +1076,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 
 	char *zErrMsg = 0;
 	int rc;
-	if (db == NULL) {
+	if (dbx == NULL) {
 		return 1;
 	}
 	
@@ -1017,7 +1093,13 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 		{
 			bFlickerLock2 = true;
 			char* szSelect = "Select count(*) as Count_Thread1_2 from testtable where threadID=0;Select count(*) as Count_Thread2_2 from testtable  where threadID=1;Select count(*) as Count_Thread3_2 from testtable  where threadID=2";
-			rc = sqlite3_exec(db, szSelect, callback_flicker, 0, &zErrMsg);
+			CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+			dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+			if (dbLock.IsLocked())
+			{
+				rc = sqlite3_exec(dbx, szSelect, callback_flicker, 0, &zErrMsg);
+			}
+			dbLock.Unlock();
 		}
 	}	
 	return 0;
@@ -1029,7 +1111,7 @@ void CMultiSQliteMFDlg::OnBnClickedFlickercount()
 	pFlickerObject = new CFlickerObject;
 
 	int rc;
-	if (db == NULL) {
+	if (dbx == NULL) {
 		this->lb->AddString(CString("Error: DB NOT YET CONNECTED."));
 		return;
 	}
@@ -1048,18 +1130,24 @@ void CMultiSQliteMFDlg::OnBnClickedSingleinsert()
 	strSQL.Format(_T("insert into testtable (appID,threadid,text) values (%s,0,'{0}')"), strAppID);
 	CStringA strSQLA(strSQL);	
 	const char* szInsertIntoTable = strSQLA;
-	rc = sqlite3_exec(db, szInsertIntoTable, NULL, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
+	CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+	dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+	if (dbLock.IsLocked())
 	{
-		sqlite3_close(db);
-		db = NULL;
-		AfxMessageBox(CString("Error inserting into table.") + CString(zErrMsg));
+		rc = sqlite3_exec(dbx, szInsertIntoTable, NULL, 0, &zErrMsg);
+		if (rc != SQLITE_OK)
+		{
+			sqlite3_close(dbx);
+			dbx = NULL;
+			AfxMessageBox(CString("Error inserting into table.") + CString(zErrMsg));
+		}
+		else
+		{
+			this->lb->AddString(L"Dataset inserted into Database");
+		}
+		this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
 	}
-	else
-	{
-		this->lb->AddString(L"Dataset inserted into Database");
-	}
-	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
+	dbLock.Unlock();
 }
 
 
@@ -1073,7 +1161,7 @@ void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 	CListBox* lbApplications = (CListBox*)(staticWnd->GetDlgItem(IDLB_APPLICATIONS));
 	lbApplications->ResetContent();	
 	int rc;
-	if (db != NULL)
+	if (dbx != NULL)
 	{		
 		execQuery(CString(_T("update apps set isActive = 0 where strftime('%s', 'now') - strftime('%s', tsLastPoll) > 30")));
 		
@@ -1082,7 +1170,13 @@ void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 		char* zErrMsg = 0;
 		char* szSelect = "Select name || ' <ID:' || id || '>' from apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
 	
-		rc = sqlite3_exec(db, szSelect, UpdateApplications, 0, &zErrMsg);		
+		CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+		dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+		if (dbLock.IsLocked())
+		{
+			rc = sqlite3_exec(dbx, szSelect, UpdateApplications, 0, &zErrMsg);
+		}
+		dbLock.Unlock();
 	}
 	
 	bPollock = false;
@@ -1101,7 +1195,7 @@ void CMultiSQliteMFDlg::OnClose()
 	// TODO: Fügen Sie hier Ihren Meldungshandlercode ein, und/oder benutzen Sie den Standard.
 
 	int rc;
-	if (db != NULL)
+	if (dbx != NULL)
 	{
 	
 		execQuery(CString("update apps set isActive = 0  where id = ") + strAppID);
@@ -1112,7 +1206,14 @@ void CMultiSQliteMFDlg::OnClose()
 
 
 void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
-{
+{	
+	if (dbx == NULL)
+	{
+		CButton* btn = (CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon);
+		lb->AddString(_T("Error: DB not connected"));
+		btn->SetCheck(false);
+		return;
+	}
 	lb = (CListBox*)GetDlgItem(IDC_LIST);
 
 	if (!((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())

@@ -15,6 +15,8 @@
 #define IDB_CPP                         149
 #define IDB_CPP32                       150
 #define IDB_CPP48                       151
+#define IDB_BITMAP1                     160
+#define IDB_BACKGROUND2                 160
 #define IDC_BTN_CONNECT                 1000
 #define IDC_LIST                        1001
 #define IDC_Multithread                 1002
@@ -36,13 +38,12 @@
 #define BTN_StartThreadsSingleCon       1029
 #define IDC_SLIDER_NUMBER_THREADS       1033
 #define IDC_LBL_NUMBER_THREADS          1034
-#define IDC_SPIN3                       1035
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        155
+#define _APS_NEXT_RESOURCE_VALUE        161
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           101

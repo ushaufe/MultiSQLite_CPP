@@ -35,6 +35,8 @@ public:
 
 	static long maxThreadID;
 
+	const int DB_LOCK_INTERVAL = 100;
+
 	protected:
 	// A handle to the ListBox must be kept static
 	// so that the different threads have access to the GUI
@@ -44,7 +46,8 @@ public:
 	
 	
 	// This database-object is used for access without connection-pooling (multiple threads / one connection)
-	static sqlite3 *db;
+	static sqlite3 *dbx;
+	CMutex mutexDB;
 
 	// Different instances of the the database are used
 	// For simultaneous multithreading with multiple connection-objects (=Pooling)

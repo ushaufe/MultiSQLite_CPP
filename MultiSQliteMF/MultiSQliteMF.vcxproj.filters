@@ -122,5 +122,11 @@
     <Image Include="..\CPP48.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\Connections2_Light.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Connections2_Light.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
