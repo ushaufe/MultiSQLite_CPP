@@ -5,7 +5,6 @@
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
-#define IDB_BACKGROUND                  130
 #define IDR_MAINFRAME                   131
 #define IDB_HAUFE                       136
 #define IDB_HAUFE16                     138
@@ -15,7 +14,6 @@
 #define IDB_CPP                         149
 #define IDB_CPP32                       150
 #define IDB_CPP48                       151
-#define IDB_BITMAP1                     160
 #define IDB_BACKGROUND2                 160
 #define IDC_BTN_CONNECT                 1000
 #define IDC_LIST                        1001

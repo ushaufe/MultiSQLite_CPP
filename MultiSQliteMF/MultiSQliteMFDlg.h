@@ -37,6 +37,10 @@ public:
 
 	const int DB_LOCK_INTERVAL = 100;
 
+	const int DB_VERSION_MIN = 1000;
+	const int DB_VERSION_MAX = 2000;
+	const CString DB_VERSION_STR = L"2.0.0.0";
+
 	protected:
 	// A handle to the ListBox must be kept static
 	// so that the different threads have access to the GUI
@@ -71,6 +75,8 @@ public:
 
 	CFlickerObject* pFlickerObject;
 	int nNumberThreads;
+
+	static CString CMultiSQliteMFDlg::RandomString(int len, int iType);
 
 
 	static UINT ThreadSQLHammerIn(LPVOID pParam);	
@@ -111,11 +117,16 @@ protected:
 	boolean setAppID();
 	bool getSQLInt(CString strSQL,int &nInt);
 	bool getDBVersion(CString& strDBVersion);
+	int getDBVersionNumber(CString strDBVersion);
+	CString getDBVersionString(int nDBVersion);
+	int getDBVersionNumber();
 	CString strDatabaseFile;
 	static CString strAppID;
 
 	const CString DB_NAME = L"MultiSQlite.db";
 	const CString APP_NAME = L"Haufe Multi - SQlite for C++";
+	CString APP_DB_NAME = L"MultiSQlite_CPP";
+	std::string ProcessIdToName(DWORD processId);
 	const int DB_REVISION = 2;
 
 public:

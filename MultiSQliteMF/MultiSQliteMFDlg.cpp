@@ -212,6 +212,15 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	CStatic* lblVersion =  (CStatic*)GetDlgItem(IDC_VERSION);
 	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath());
 	lblVersion->SetWindowText( strVersion);	
+	
+	/*
+	DWORD processID = GetCurrentProcessId();
+	const char* szProcessName = (ProcessIdToName(processID).c_str());
+	CString strProcessName(szProcessName);
+	APP_DB_NAME = strProcessName;
+	MessageBox(APP_DB_NAME);
+	*/
+	
 	Connect();
 
 
@@ -323,6 +332,32 @@ boolean CMultiSQliteMFDlg::execQuery(CString strQuery)
 	dbLock.Unlock();
 }
 
+
+int CMultiSQliteMFDlg::getDBVersionNumber(CString strDBVersion)
+{
+	//strDBVersion = strDBVersion.Trim();	
+	strDBVersion.Remove('.');
+
+	CT2A ascDBVersion(strDBVersion);
+	char* p;
+	int nDBVersion = strtol(ascDBVersion.m_psz, &p, 10);
+	if (*p != 0) {
+		return 0;
+	}
+
+	return nDBVersion;
+
+}
+
+int CMultiSQliteMFDlg::getDBVersionNumber()
+{
+	CString strDBVersion;
+	if (!getDBVersion(strDBVersion))
+		return -1;
+
+	return getDBVersionNumber(strDBVersion);
+}
+
 void CMultiSQliteMFDlg::Connect()
 {		
 	char* szAppData;
@@ -382,6 +417,14 @@ void CMultiSQliteMFDlg::Connect()
 	}
 	//DeleteFile(L"demo.db");
 	*/
+
+	bool bDatabaseExisted = PathFileExists(strDatabaseFile);
+	if (!bDatabaseExisted)
+	{
+		this->lb->AddString(L"No database has been created yet.");
+		this->lb->AddString(L"Create database.....");
+	}
+
 	rc = sqlite3_open_v2(szDatabaseFile, &dbx, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 	this->lb->AddString(L"Read + Write Access");
 
@@ -398,88 +441,182 @@ void CMultiSQliteMFDlg::Connect()
 	}
 	else
 	{
+		if (!bDatabaseExisted)
+		{
+			this->lb->AddString(L"Database created.");
+		}
 		this->lb->AddString(L"Connected");
 		this->lb->AddString(L"Database: " + strDatabaseFile);
 	}
 
 
 	bool bRecreateDB = false;
+	int nDBVersionNumber = getDBVersionNumber();
 	CString strDBVersion;
-	if (getDBVersion(strDBVersion))
-	{		
-		this->lb->AddString(L"Database Version: " + strDBVersion);
-		if (strDBVersion.Trim().Compare(_T("1.0.0.0"))!=0)
+	getDBVersion(strDBVersion);
+	if (bDatabaseExisted)
+	{
+		if (nDBVersionNumber <= 0)
 		{
-			this->lb->AddString(L"Error: Old database....");
-			this->lb->AddString(L"       Deleting tables....");
-			this->lb->AddString(L"       Disconnect....");				
+			this->lb->AddString(L"Error: Invalid database....");
 			bRecreateDB = true;
 		}
 		else
 		{
-			bRecreateDB = false;
+			this->lb->AddString(L"Database Version: " + strDBVersion);
 		}
-	}
-	else
-	{
-		this->lb->AddString(L"Error: Invalid database....");		
-
-		bRecreateDB = true;
-	}
-
-	if (bRecreateDB)
-	{
-		this->lb->AddString(L"       Disconnect....");
-		sqlite3_close(dbx);
-		
+		if (nDBVersionNumber < DB_VERSION_MIN)
 		{
-			this->lb->AddString(L"       Deleting Database....");
-			if (!DeleteFile(strDatabaseFile))
+			this->lb->AddString(L"Error: Old database....");
+			bRecreateDB = true;
+		}
+		if (nDBVersionNumber > DB_VERSION_MAX)
+		{
+			this->lb->AddString(L"Error: The database file is newer than the application.");
+			this->lb->AddString(L"       Please update your application or rename the database file.");
+			this->lb->AddString(L"       -----------------------------------------------------------.");
+			this->lb->AddString(L"       The file is located here:");
+			this->lb->AddString(L"       -----------------------------------------------------------.");
+			this->lb->AddString(L"       " + strDatabaseFile);
+			return;
+		}
+
+
+		if (bRecreateDB)
+		{
+			this->lb->AddString(L"       Recreating database....");
+			this->lb->AddString(L"       Disconnect....");
+			sqlite3_close(dbx);
+
 			{
-				this->lb->AddString(L"Error: Old Database could not have been deleted.");
+				this->lb->AddString(L"       Deleting Database....");
+				if (!DeleteFile(strDatabaseFile))
+				{
+					this->lb->AddString(L"Error: Old Database could not have been deleted.");
+					dbx = NULL;
+					return;
+				}
+			}
+			this->lb->AddString(L"       Recreate database and connect....");
+			rc = sqlite3_open_v2(szDatabaseFile, &dbx, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+			if (rc != SQLITE_OK)
+			{
 				dbx = NULL;
+				this->lb->AddString(L"Error: Cant connect!");
 				return;
 			}
+			else
+			{
+				this->lb->AddString(L"Connected");
+				this->lb->AddString(L"Database: " + strDatabaseFile);
+			}
 		}
-		this->lb->AddString(L"       Recreate database and connect....");
-		rc = sqlite3_open_v2(szDatabaseFile, &dbx, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-		if (rc != SQLITE_OK)
-		{
-			dbx = NULL;
-			this->lb->AddString(L"Error: Cant connect!");
-		}
-		else
-		{
-			this->lb->AddString(L"Connected");
-			this->lb->AddString(L"Database: " + strDatabaseFile);
+
+		if (dbx == NULL) {
+			this->lb->AddString(L"Error: Database is not working");
+			return;
 		}
 	}
 
-	if (dbx == NULL) {
-		this->lb->AddString(L"Error: Database is not working");
-		return;
+	if (bDatabaseExisted)
+	{		
+		if (nDBVersionNumber < getDBVersionNumber(DB_VERSION_STR))
+		{
+			this->lb->AddString(L"Updating database....");
+			this->lb->AddString(L"       Current version is: " + this->getDBVersionString(nDBVersionNumber));
+			this->lb->AddString(L"       Update to: " + DB_VERSION_STR);
+		}
 	}
-	UINT_PTR tiUpdateApps = SetTimer(1, 5000, NULL); // one event every 1000 ms = 1 s
-	CString appName = CString("MultiSQLite_CPP");
 	
-	
-	execQuery( CString( "Create Table if NOT Exists version (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT) ") );
-	execQuery( CString( "Create Table if NOT Exists testtable (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadID INTEGER, appID INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP) " ) );
-	execQuery( CString("Create Table if NOT Exists apps(id INTEGER PRIMARY KEY AUTOINCREMENT, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP, tsLastPoll TIMESTAMP DEFAULT CURRENT_TIMESTAMP, name TEXT, isActive INTEGER DEFAULT FALSE)"));
-	execQuery( CString( "Create Table if NOT Exists threads(id INTEGER PRIMARY KEY AUTOINCREMENT, threadID INTEGER, appID INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP, isActive INTEGER DEFAULT FALSE)"));
-	execQuery(CString("update apps set isActive=0 where tsLastPoll is null ") );
-	
-	execQuery( CString( "insert into apps (name, isActive) values ('") + appName + CString( "', true)") ) ;
-	setAppID();
+	if (nDBVersionNumber < 1000)
+	{
+		execQuery(CString("Create Table if NOT Exists version (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT) "));
+		execQuery(CString("Create Table if NOT Exists testtable (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadID INTEGER, appID INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP) "));
+		execQuery(CString("Create Table if NOT Exists apps(id INTEGER PRIMARY KEY AUTOINCREMENT, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP, tsLastPoll TIMESTAMP DEFAULT CURRENT_TIMESTAMP, name TEXT, isActive INTEGER DEFAULT FALSE)"));
+		execQuery(CString("Create Table if NOT Exists threads(id INTEGER PRIMARY KEY AUTOINCREMENT, threadID INTEGER, appID INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP, isActive INTEGER DEFAULT FALSE)"));
+		execQuery(CString("update apps set isActive=0 where tsLastPoll is null "));
+
+		//execQuery(CString("insert into apps (name, isActive) values ('") + APP_DB_NAME + CString("', true)"));
+		nDBVersionNumber = 1000;
+	}
+
+	if (nDBVersionNumber < 1100)
+	{
+		execQuery(CString("Drop table if exists version"));
+		execQuery(CString("Drop table if exists multisqlite_version"));
+		execQuery(CString("Create Table if NOT Exists multisqlite_version (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, version TEXT) "));
+		execQuery(CString("insert into multisqlite_version (id,name,version) values (0,'MULTISQLITE', '") + CString ("1.1.0.0")  + CString("')"));
+		nDBVersionNumber = 1100;
+	}
+
+	if (nDBVersionNumber < 2000)
+	{
+		{
+			execQuery(CString("Alter Table testtable RENAME TO multisqlite_entries "));
+			execQuery(CString("Alter Table apps RENAME TO multisqlite_apps  "));
+			execQuery(CString("Alter Table threads RENAME TO multisqlite_threads  "));
+			execQuery(L"Update multisqlite_version set version='" + CString(DB_VERSION_STR) + CString("'"));			
+			CString strCurrentDBVersion;
+			nDBVersionNumber = getDBVersionNumber(DB_VERSION_STR);
+		}
+				
+	}
 	
 	// Create a table that can hold text-data along with the thread-id of the thread that created the data
+	/*
 	CString strInsert;
 	strInsert.Format(_T("insert into testtable (appID,threadid,text) values (%s,0,'%s')"), strAppID, CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M")); // 
 	execQuery(strInsert);
 	execQuery(CString( "Delete from version") );
 	execQuery(CString( "insert into version (id,name) values (0,") + _T("'1.0.0.0'") + CString(")"));
+	
+	*/
+
+	//Create a table that can hold text-data along with the thread-id of the thread that created the data
+	execQuery(L"update multisqlite_apps set tsLastPoll = CURRENT_TIMESTAMP where id=" + strAppID);
+	execQuery(L"update multisqlite_apps set isActive=0 where tsLastPoll is null ");	
+	execQuery(CString("insert into multisqlite_apps (name, isActive) values ('") + APP_DB_NAME + CString("', true)"));
+	setAppID();
+	CString strInsert;
+	strInsert.Format(L"insert into multisqlite_entries (appID,threadid,text) values (%s,0,'%s')", strAppID, CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M"));
+	execQuery(strInsert);
+
+
+	
+	UINT_PTR tiUpdateApps = SetTimer(1, 5000, NULL); // one event every 1000 ms = 1 s
+	CString appName = CString("MultiSQLite_CPP");
+
 
 	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
+
+	
+}
+
+
+
+CString CMultiSQliteMFDlg::getDBVersionString(int nDBVersion)
+{
+	int d = 0;
+	int r = 0;
+
+	CString str = _T("");
+
+	while (nDBVersion > 0)
+	{
+		d = nDBVersion / 10;
+		r = nDBVersion % 10;
+
+		CString strR = _T("");
+
+		if (str.GetLength() > 0)
+			str = str + '.';
+		strR.Format(_T("%d"), r);
+
+		str += strR;
+		nDBVersion = d;
+	}
+	str.MakeReverse();
+	return str;
 }
 
 
@@ -489,7 +626,7 @@ bool  CMultiSQliteMFDlg::getDBVersion(CString& strDBVersion)
 	//https://www.programmersought.com/article/22293267117/
 	//https://stackoverflow.com/questions/14743061/sqlite3-exec-without-callback/26463522
 
-	CString strSQL = _T("Select name from version order by id DESC LIMIT 1");
+	CString strSQL = _T("Select version from multisqlite_version order by id DESC LIMIT 1");
 	CStringA strSQLA(strSQL);
 	const char* szSQL = strSQLA;
 
@@ -544,7 +681,7 @@ boolean CMultiSQliteMFDlg::setAppID() {
 	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
 	if (dbLock.IsLocked())
 	{
-		int rc = sqlite3_prepare_v2(dbx, "SELECT id FROM apps order by id DESC LIMIT 1", -1, &stmt, NULL);
+		int rc = sqlite3_prepare_v2(dbx, "SELECT id FROM multisqlite_apps order by id DESC LIMIT 1", -1, &stmt, NULL);
 		if (rc != SQLITE_OK)
 		{
 			dbLock.Unlock();
@@ -681,7 +818,7 @@ void CMultiSQliteMFDlg::OnBnClickedHammerinsql()
 	
 	CString strSQLInsert;
 	for (int i = 0; i < nNumberInserts; i++) {
-		strSQLInsert.Format(_T("insert into testtable (threadid,text,appid) values (0,'T1: TID:0 / %d',%s)"), i, strAppID);
+		strSQLInsert.Format(_T("insert into multisqlite_entries (threadid,text,appid) values (0,'T1: TID:0 / %d',%s)"), i, strAppID);
 		CT2A szSQLInsert(strSQLInsert.GetString());
 		CSingleLock dbLock(&mutexDB);
 		dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -719,7 +856,7 @@ void CMultiSQliteMFDlg::OnBnClickedShowdbcontents()
 	dbLock.Unlock();
 
 	char *zErrMsg = 0;
-	char* szSelect = "Select * from testtable";
+	char* szSelect = "Select * from multisqlite_entries";
 	
 	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
 	if (dbLock.IsLocked())
@@ -751,7 +888,7 @@ void CMultiSQliteMFDlg::OnBnClickedShowDbCountSingle()
 	dbLock.Unlock();
 
 	char *zErrMsg = 0;
-	char* szSelect = "Select count(*) as Count_Thread_GUI from testtable where threadID=0;Select count(*) as Count_Thread1 from testtable  where threadID=1;Select count(*) as Count_Thread2 from testtable  where threadID=2";
+	char* szSelect = "Select count(*) as Count_Thread_GUI from multisqlite_entries where threadID=0;Select count(*) as Count_Thread1 from multisqlite_entries where threadID=1;Select count(*) as Count_Thread2 from multisqlite_entries  where threadID=2";
 	
 	
 	dbLock.Lock(DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -781,6 +918,82 @@ void CMultiSQliteMFDlg::OnBnClickedHammer2sql()
 	AfxBeginThread(ThreadSQLHammerIn, pFlickerObject);
 }
 
+CString CMultiSQliteMFDlg::RandomString(int iLength, int iType)
+{
+
+	CString strReturn;
+
+	CString strLocal;
+
+	for (int i = 0; i < iLength; ++i)
+	{
+		int iNumber;
+
+		// Seed the random-number generator with TickCount so that
+		// the numbers will be different every time we run.
+		srand((unsigned int)((i + 1) * iLength * GetTickCount()));
+
+		switch (iType)
+		{
+		case 1:
+			iNumber = rand() % 122;
+			if (48 > iNumber)
+
+				iNumber += 48;
+
+			if ((57 < iNumber) &&
+				(65 > iNumber))
+
+				iNumber += 7;
+
+			if ((90 < iNumber) &&
+				(97 > iNumber))
+
+				iNumber += 6;
+
+			strReturn += (char)iNumber;
+
+			break;
+
+		case 2:
+
+			iNumber = rand() % 122;
+
+			if (65 > iNumber)
+
+				iNumber = 65 + iNumber % 56;
+
+			if ((90 < iNumber) &&
+				(97 > iNumber))
+
+				iNumber += 6;
+
+			strReturn += (char)iNumber;
+
+			break;
+
+		case 3:
+
+			strLocal.Format(L"%i", rand() % 9);
+
+			strReturn += strLocal;
+
+			break;
+
+		default:
+
+			strReturn += (char)rand();
+
+			break;
+
+		}
+
+	}
+
+	return strReturn;
+
+}
+
 
 UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
@@ -804,7 +1017,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 
 	CString strStartThread;
-	strStartThread.Format(_T("insert into threads (threadid,appID,isActive) values (%d,'%s',1)"), threadID, strAppID);
+	strStartThread.Format(_T("insert into multisqlite_threads (threadid,appID,isActive) values (%d,'%s',1)"), threadID, strAppID);
 	CT2A szStartThread(strStartThread.GetString());
 	CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
 	dbLock.Lock( ((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -826,7 +1039,10 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	//for (int i = 0; i < 1000; i++) {
 	while (((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())
 	{
-		strSQLInsert.Format(_T("insert into testtable (threadid,text,appID) values (%d,'T1: TID:1 / d',%s)"), threadID, strAppID);
+			
+		CString strRandomText = RandomString(1+rand()%255,1);
+
+		strSQLInsert.Format(_T("insert into multisqlite_entries (threadid,text,appID) values (%d,'%s',%s)"), threadID, strRandomText, strAppID);
 		CT2A szSQLInsert(strSQLInsert.GetString());
 		CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
 		dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -847,7 +1063,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	((CMultiSQliteMFDlg*)staticWnd)->lb->AddString(strMessage);
 
 	CString strStopThread;
-	strStopThread.Format(_T("update threads set isActive=0 where threadID=%d and appID='%s' "), threadID, strAppID);
+	strStopThread.Format(_T("update multisqlite_threads set isActive=0 where threadID=%d and appID='%s' "), threadID, strAppID);
 	CT2A szStopThread(strStopThread.GetString());
 	
 	dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -902,7 +1118,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 		strOut = strOut + CString(" ") + CString("Connected (0)!");
 	}
 
-	const char* szSQLCreateTable = "Create Table if NOT Exists testtable(id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadid INTEGER)";
+	const char* szSQLCreateTable = "Create Table if NOT Exists Select * from multisqlite_entries (id INTEGER PRIMARY KEY AUTOINCREMENT, text VARCHAR, threadid INTEGER, tsCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP))";
 	rc = sqlite3_exec(db0, szSQLCreateTable, callback, 0, &zErrMsg);
 	if (rc != SQLITE_OK)
 	{
@@ -957,7 +1173,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn1(LPVOID pParam) {
 
 	CString strSQLInsert;
 	for (int i = 0; i < 1000; i++) {
-		strSQLInsert.Format(_T("insert into testtable (threadid,text) values (1,'T1: TID:1 / %d')"), i);
+		strSQLInsert.Format(_T("insert into multisqlite_entries (threadid,text) values (1,'T1: TID:1 / %d')"), i);
 		CT2A szSQLInsert(strSQLInsert.GetString());
 		rc = sqlite3_exec(db1, szSQLInsert, callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK)
@@ -983,7 +1199,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn2(LPVOID pParam) {
 
 	CString strSQLInsert;
 	for (int i = 0; i < 1000; i++) {
-		strSQLInsert.Format(_T("insert into testtable (threadid,text) values (2,'T2: TID:2 / %d')"), i);
+		strSQLInsert.Format(_T("insert into multisqlite_entries (threadid,text) values (2,'T2: TID:2 / %d')"), i);
 		CT2A szSQLInsert(strSQLInsert.GetString());
 		rc = sqlite3_exec(db2, szSQLInsert, callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK)
@@ -1013,7 +1229,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticountOnce()
 	}
 
 	char *zErrMsg = 0;
-	char* szSelect = "Select count(*) as Count_Thread1 from testtable where threadID=0;Select count(*) as Count_Thread2 from testtable  where threadID=1;Select count(*) as Count_Thread3 from testtable  where threadID=2";
+	char* szSelect = "Select count(*) as Count_Thread1 from multisqlite_entries where threadID=0;Select count(*) as Count_Thread2 from testtable  where threadID=1;Select count(*) as Count_Thread3 from multisqlite_entries  where threadID=2";
 	rc = sqlite3_exec(db0, szSelect, callback, 0, &zErrMsg);
 
 	if (rc != SQLITE_OK)
@@ -1051,7 +1267,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 		{
 			lLastFlicker = GetTickCount64();
 			bFlickerLock1 = true;
-			char* szSelect = "Select count(*) as Count_Thread1_1 from testtable where threadID=0; Select count(*) as Count_Thread2_1 from testtable  where threadID=1; Select count(*) as Count_Thread3_1 from testtable  where threadID=2";
+			char* szSelect = "Select count(*) as Count_Thread1_1 from multisqlite_entries where threadID=0; Select count(*) as Count_Thread2_1 from testtable  where threadID=1; Select count(*) as Count_Thread3_1 from multisqlite_entries  where threadID=2";
 			
 			CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
 			dbLock.Lock( ((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -1092,7 +1308,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 		if (!bFlickerLock2)
 		{
 			bFlickerLock2 = true;
-			char* szSelect = "Select count(*) as Count_Thread1_2 from testtable where threadID=0;Select count(*) as Count_Thread2_2 from testtable  where threadID=1;Select count(*) as Count_Thread3_2 from testtable  where threadID=2";
+			char* szSelect = "Select count(*) as Count_Thread1_2 from multisqlite_entries where threadID=0;Select count(*) as Count_Thread2_2 from testtable  where threadID=1;Select count(*) as Count_Thread3_2 from multisqlite_entries  where threadID=2";
 			CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
 			dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
 			if (dbLock.IsLocked())
@@ -1127,7 +1343,7 @@ void CMultiSQliteMFDlg::OnBnClickedSingleinsert()
 	char* zErrMsg = 0;
 
 	CString strSQL;
-	strSQL.Format(_T("insert into testtable (appID,threadid,text) values (%s,0,'{0}')"), strAppID);
+	strSQL.Format(_T("insert into multisqlite_entries (appID,threadid,text) values (%s,0,'{0}')"), strAppID);
 	CStringA strSQLA(strSQL);	
 	const char* szInsertIntoTable = strSQLA;
 	CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
@@ -1163,12 +1379,12 @@ void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 	int rc;
 	if (dbx != NULL)
 	{		
-		execQuery(CString(_T("update apps set isActive = 0 where strftime('%s', 'now') - strftime('%s', tsLastPoll) > 30")));
+		execQuery(CString(_T("update multisqlite_apps set isActive = 0 where strftime('%s', 'now') - strftime('%s', tsLastPoll) > 30")));
 		
-		execQuery(CString("update apps set tsLastPoll = CURRENT_TIMESTAMP, isActive=1 where id = ") + strAppID);
+		execQuery(CString("update multisqlite_apps set tsLastPoll = CURRENT_TIMESTAMP, isActive=1 where id = ") + strAppID);
 
 		char* zErrMsg = 0;
-		char* szSelect = "Select name || ' <ID:' || id || '>' from apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
+		char* szSelect = "Select name || ' <ID:' || id || '>' from multisqlite_apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
 	
 		CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
 		dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
@@ -1198,7 +1414,7 @@ void CMultiSQliteMFDlg::OnClose()
 	if (dbx != NULL)
 	{
 	
-		execQuery(CString("update apps set isActive = 0  where id = ") + strAppID);
+		execQuery(CString("update multisqlite_apps set isActive = 0  where id = ") + strAppID);
 	}
 
 	CDialogEx::OnClose();
@@ -1277,6 +1493,33 @@ void CMultiSQliteMFDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBa
 			
 		CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
 	}
+}
 
-
+std::string CMultiSQliteMFDlg::ProcessIdToName(DWORD processId)
+{
+	std::string ret;
+	HANDLE handle = OpenProcess(
+		PROCESS_QUERY_LIMITED_INFORMATION,
+		FALSE,
+		processId /* This is the PID, you can find one from windows task manager */
+	);
+	if (handle)
+	{
+		DWORD buffSize = 1024;
+		CHAR buffer[1024];
+		if (QueryFullProcessImageNameA(handle, 0, buffer, &buffSize))
+		{
+			ret = buffer;
+		}
+		else
+		{
+			printf("Error GetModuleBaseNameA : %lu", GetLastError());
+		}
+		CloseHandle(handle);
+	}
+	else
+	{
+		printf("Error OpenProcess : %lu", GetLastError());
+	}
+	return ret;
 }
