@@ -59,6 +59,8 @@ public:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBtnClickedFlickerCount();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -122,12 +124,12 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_BN_CLICKED(BTN_MultiConnect_Write, &CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite)
 	ON_BN_CLICKED(BTN_SQLMultiHammer, &CMultiSQliteMFDlg::OnBnClickedSqlmultihammer)
 	ON_BN_CLICKED(BTN_MultiCount_Once, &CMultiSQliteMFDlg::OnBnClickedMulticountOnce)
-	ON_BN_CLICKED(BTN_SingleInsert, &CMultiSQliteMFDlg::OnBnClickedSingleinsert)
-	ON_BN_CLICKED(BTN_FlickerCount, &CMultiSQliteMFDlg::OnBnClickedFlickercount)	
+	ON_BN_CLICKED(BTN_SingleInsert, &CMultiSQliteMFDlg::OnBnClickedSingleinsert)	
 	ON_WM_TIMER()	
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(BTN_StartThreadsSingleCon, &CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon)
 	ON_WM_HSCROLL()
+	ON_BN_CLICKED(BTN_FLICKER_COUNT, &CMultiSQliteMFDlg::OnBnClickedFlickerCount)
 END_MESSAGE_MAP()
 
 
@@ -140,6 +142,7 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	
 	CDialogEx::OnInitDialog();
 	CScrollBar* scrollBarNumberThreads = (CScrollBar*)GetDlgItem(IDC_SLIDER_NUMBER_THREADS);
+	staticWnd = this;
 	nNumberThreads = 1;
 	scrollBarNumberThreads->SetScrollRange(1, 20, true);
 	scrollBarNumberThreads->SetScrollPos(nNumberThreads);
@@ -364,30 +367,34 @@ void CMultiSQliteMFDlg::Connect()
 	size_t lenAppData;
 	errno_t err = _dupenv_s(&szAppData, &lenAppData, "APPDATA");
 
-	CString strAppData(szAppData);
+	CString strAppDataHaufe(szAppData);
 
 	// This connection is not to be used by threads
 	// It should simply simulate the easiest case (simple access to SQlite)
 	// In order to rule out errors in the more complex cases
-
 	
 	if (dbx != NULL) {
 		this->lb->AddString(L"Error: Already Connected!");
 		return;
 	}
 
-	if (strAppData.GetLength() > 0) {
-		if (strAppData[strAppData.GetLength() - 1] != '\\')
-			strAppData += '\\';		
+	if (strAppDataHaufe.GetLength() > 0) {
+		if (strAppDataHaufe[strAppDataHaufe.GetLength() - 1] != '\\')
+			strAppDataHaufe += '\\';		
 	}
 
-	strAppData += CString("MultiSQlite") + CString("\\");
+	strAppDataHaufe += CString("Haufe") + CString("\\");
 
+	CStringW strwAppDataHaufe(strAppDataHaufe);
+	LPCWSTR ptrStrAppDataHaufe = strwAppDataHaufe;
+	CreateDirectory(ptrStrAppDataHaufe, NULL);
+
+	CString strAppData = strAppDataHaufe + CString("MultiSQLite") + CString("\\");
 	CStringW strwAppData(strAppData);
 	LPCWSTR ptrStrAppData = strwAppData;
 	CreateDirectory(ptrStrAppData, NULL);
 		
-	strDatabaseFile = strAppData + + DB_NAME;
+	strDatabaseFile = strAppData + DB_NAME;
 	//const char* szDatabaseFile = (LPCTSTR)strDatabaseFile;
 	
 	//char* c = strDatabaseFile.GetBuffer(strDatabaseFile.GetLength());
@@ -431,7 +438,7 @@ void CMultiSQliteMFDlg::Connect()
 	const int STATEMENTS = 8;
 	char* zErrMsg = 0;
 	//const char* pSQL[STATEMENTS];
-	staticWnd = this;
+	
 
 
 	if (rc != SQLITE_OK)
@@ -1257,7 +1264,8 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 	long lLastFlicker, lTimeNow;	
 	lLastFlicker = GetTickCount64();
 	long lDiff;
-	while (true) 
+	CButton* btnFlickerCount = ((CButton*)staticWnd->GetDlgItem(BTN_FLICKER_COUNT));
+	while (btnFlickerCount->GetCheck())
 	{
 		lTimeNow = GetTickCount64();
 		lDiff =  lTimeNow - lLastFlicker;		
@@ -1322,19 +1330,7 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 }
 
 
-void CMultiSQliteMFDlg::OnBnClickedFlickercount()
-{
-	pFlickerObject = new CFlickerObject;
 
-	int rc;
-	if (dbx == NULL) {
-		this->lb->AddString(CString("Error: DB NOT YET CONNECTED."));
-		return;
-	}
-
-	AfxBeginThread(ThreadSQLFlicker1, pFlickerObject);
-	//AfxBeginThread(ThreadSQLFlicker2, pFlickerObject);
-}
 
 
 void CMultiSQliteMFDlg::OnBnClickedSingleinsert()
@@ -1522,4 +1518,27 @@ std::string CMultiSQliteMFDlg::ProcessIdToName(DWORD processId)
 		printf("Error OpenProcess : %lu", GetLastError());
 	}
 	return ret;
+}
+
+
+
+
+
+
+
+
+void CMultiSQliteMFDlg::OnBnClickedFlickerCount()
+{
+	pFlickerObject = new CFlickerObject;
+
+	int rc;
+	if (dbx == NULL) {
+		CButton* btn = (CButton*)staticWnd->GetDlgItem(BTN_FLICKER_COUNT);
+		this->lb->AddString(CString("Error: DB NOT YET CONNECTED."));
+		btn->SetCheck(false);
+		return;
+	}
+
+	AfxBeginThread(ThreadSQLFlicker1, pFlickerObject);
+	//AfxBeginThread(ThreadSQLFlicker2, pFlickerObject);
 }

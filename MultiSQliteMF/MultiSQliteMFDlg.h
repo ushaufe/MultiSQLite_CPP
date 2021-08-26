@@ -123,7 +123,7 @@ protected:
 	CString strDatabaseFile;
 	static CString strAppID;
 
-	const CString DB_NAME = L"MultiSQlite.db";
+	const CString DB_NAME = L"MultiSQLite.db";
 	const CString APP_NAME = L"Haufe Multi - SQlite for C++";
 	CString APP_DB_NAME = L"MultiSQlite_CPP";
 	std::string ProcessIdToName(DWORD processId);
@@ -141,12 +141,12 @@ public:
 	afx_msg void OnBnClickedMulticonnectWrite();
 	afx_msg void OnBnClickedSqlmultihammer();
 	afx_msg void OnBnClickedMulticountOnce();
-	afx_msg void OnBnClickedFlickercount();
 	afx_msg void OnBnClickedSingleinsert();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnClose();
 	afx_msg void OnBnClickedStartthreadssinglecon();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnBnClickedFlickerCount();
 };
 
 

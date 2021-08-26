@@ -30,6 +30,8 @@
 #define BTN_MultiCount_Once             1012
 #define DB_Flicker_Counn                1013
 #define BTN_FlickerCount                1013
+#define BTN_COUNT_FLICKER               1013
+#define BTN_FLICKER_COUNT               1013
 #define IDC_CPP_PIC                     1020
 #define IDLB_APPLICATIONS               1026
 #define IDC_VERSION                     1027
