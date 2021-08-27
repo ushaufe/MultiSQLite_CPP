@@ -1,0 +1,23 @@
+﻿  pch.cpp
+  MultiSQliteMF.cpp
+  MultiSQliteMFDlg.cpp
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(815): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1109): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1274): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1279): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1285): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1319): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1323): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1420): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1545): warning C4101: "rc": Unreferenzierte lokale Variable
+  Quelle.cpp
+  Quelle1.cpp
+  VersionInfo.cpp
+  shell.c
+  sqlite3.c
+  Code wird generiert.
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(729): warning C4715: "CMultiSQliteMFDlg::setAppID": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(336): warning C4715: "CMultiSQliteMFDlg::execQuery": Nicht alle Codepfade geben einen Wert zurück.
+  All 2897 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Codegenerierung ist abgeschlossen.
+  MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Release\MultiSQLite_CPP.exe

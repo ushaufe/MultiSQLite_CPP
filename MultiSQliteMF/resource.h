@@ -15,6 +15,7 @@
 #define IDB_CPP32                       150
 #define IDB_CPP48                       151
 #define IDB_BACKGROUND2                 160
+#define IDI_ICON1                       163
 #define IDC_BTN_CONNECT                 1000
 #define IDC_LIST                        1001
 #define IDC_Multithread                 1002
@@ -30,7 +31,6 @@
 #define BTN_MultiCount_Once             1012
 #define DB_Flicker_Counn                1013
 #define BTN_FlickerCount                1013
-#define BTN_COUNT_FLICKER               1013
 #define BTN_FLICKER_COUNT               1013
 #define IDC_CPP_PIC                     1020
 #define IDLB_APPLICATIONS               1026
@@ -43,7 +43,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        161
+#define _APS_NEXT_RESOURCE_VALUE        164
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           101

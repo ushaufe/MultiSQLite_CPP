@@ -40,7 +40,7 @@
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -135,7 +135,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -220,11 +220,13 @@
     <None Include="res\MultiSQliteMF.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Sqlite4CS\res\Connections.png" />
     <Image Include="..\1920px-SQLite370.svg.png" />
     <Image Include="..\APP_TITLE.bmp" />
     <Image Include="..\bitmap1.bmp" />
     <Image Include="..\Connection2_Light2.bmp" />
     <Image Include="..\ConnectionIcon.ico" />
+    <Image Include="..\Connections.ico" />
     <Image Include="..\Connections2_Light.bmp" />
     <Image Include="..\Connections2_Light.jpg" />
     <Image Include="..\CPP.bmp" />
@@ -233,6 +235,7 @@
     <Image Include="..\Haufe.16bmp.bmp" />
     <Image Include="..\Haufe.bmp" />
     <Image Include="..\Haufe_Transparent.png" />
+    <Image Include="..\icon1.ico" />
     <Image Include="..\Sqlite.bmp" />
     <Image Include="..\Sqlite64..bmp" />
     <Image Include="res\MultiSQliteMF.ico" />

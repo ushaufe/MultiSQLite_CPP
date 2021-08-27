@@ -1011,9 +1011,11 @@ UINT CMultiSQliteMFDlg::ThreadSQLHammerIn(LPVOID pParam) {
 	char* zErrMsg = 0;
 	int rc;
 
+	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
+    */
 
 	if (dbx == NULL) {
 		return 1;
@@ -1169,9 +1171,11 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn1(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
 
+	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
+		*/
 	char *zErrMsg = 0;
 	int rc;
 	if (db1 == NULL) {
@@ -1195,9 +1199,12 @@ UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn1(LPVOID pParam) {
 UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn2(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
 
+	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
+		*/
+
 	char *zErrMsg = 0;
 	int rc;
 	if (db2 == NULL) {
@@ -1251,9 +1258,11 @@ void CMultiSQliteMFDlg::OnBnClickedMulticountOnce()
 UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
 	
+	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
+    */
 
 	char *zErrMsg = 0;
 	int rc;
@@ -1294,9 +1303,11 @@ UINT CMultiSQliteMFDlg::ThreadSQLFlicker1(LPVOID pParam) {
 UINT CMultiSQliteMFDlg::ThreadSQLFlicker2(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
 
+	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
 		return 1;   // if pObject is not valid
+	*/
 
 	char *zErrMsg = 0;
 	int rc;
