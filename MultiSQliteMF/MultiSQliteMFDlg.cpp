@@ -3,6 +3,7 @@
 //
 
 #include "pch.h"
+#include <afxinet.h>
 #include "framework.h"
 #include "MultiSQliteMF.h"
 #include "MultiSQliteMFDlg.h"
@@ -130,6 +131,7 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_BN_CLICKED(BTN_StartThreadsSingleCon, &CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(BTN_FLICKER_COUNT, &CMultiSQliteMFDlg::OnBnClickedFlickerCount)
+	ON_BN_CLICKED(BTN_Update, &CMultiSQliteMFDlg::OnBnClickedUpdate)
 END_MESSAGE_MAP()
 
 
@@ -223,9 +225,8 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	APP_DB_NAME = strProcessName;
 	MessageBox(APP_DB_NAME);
 	*/
-	
-	Connect();
 
+	SetTimer(tiStartupDelay, 2000, NULL); // one event every 1000 ms = 1 s	
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -338,7 +339,7 @@ boolean CMultiSQliteMFDlg::execQuery(CString strQuery)
 
 int CMultiSQliteMFDlg::getDBVersionNumber(CString strDBVersion)
 {
-	//strDBVersion = strDBVersion.Trim();	
+	strDBVersion = strDBVersion.Trim();	
 	strDBVersion.Remove('.');
 
 	CT2A ascDBVersion(strDBVersion);
@@ -352,35 +353,17 @@ int CMultiSQliteMFDlg::getDBVersionNumber(CString strDBVersion)
 
 }
 
-int CMultiSQliteMFDlg::getDBVersionNumber()
+CString CMultiSQliteMFDlg::getAppData()
 {
-	CString strDBVersion;
-	if (!getDBVersion(strDBVersion))
-		return -1;
-
-	return getDBVersionNumber(strDBVersion);
-}
-
-void CMultiSQliteMFDlg::Connect()
-{		
 	char* szAppData;
 	size_t lenAppData;
 	errno_t err = _dupenv_s(&szAppData, &lenAppData, "APPDATA");
 
 	CString strAppDataHaufe(szAppData);
 
-	// This connection is not to be used by threads
-	// It should simply simulate the easiest case (simple access to SQlite)
-	// In order to rule out errors in the more complex cases
-	
-	if (dbx != NULL) {
-		this->lb->AddString(L"Error: Already Connected!");
-		return;
-	}
-
 	if (strAppDataHaufe.GetLength() > 0) {
 		if (strAppDataHaufe[strAppDataHaufe.GetLength() - 1] != '\\')
-			strAppDataHaufe += '\\';		
+			strAppDataHaufe += '\\';
 	}
 
 	strAppDataHaufe += CString("Haufe") + CString("\\");
@@ -393,8 +376,33 @@ void CMultiSQliteMFDlg::Connect()
 	CStringW strwAppData(strAppData);
 	LPCWSTR ptrStrAppData = strwAppData;
 	CreateDirectory(ptrStrAppData, NULL);
+
+	return strAppData;
+}
+
+int CMultiSQliteMFDlg::getDBVersionNumber()
+{
+	CString strDBVersion;
+	if (!getDBVersion(strDBVersion))
+		return -1;
+
+	return getDBVersionNumber(strDBVersion);
+}
+
+void CMultiSQliteMFDlg::Connect()
+{		
+	// This connection is not to be used by threads
+	// It should simply simulate the easiest case (simple access to SQlite)
+	// In order to rule out errors in the more complex cases
+	
+	if (dbx != NULL) {
+		this->lb->AddString(L"Error: Already Connected!");
+		return;
+	}
+
+
 		
-	strDatabaseFile = strAppData + DB_NAME;
+	strDatabaseFile = getAppData() + DB_NAME;
 	//const char* szDatabaseFile = (LPCTSTR)strDatabaseFile;
 	
 	//char* c = strDatabaseFile.GetBuffer(strDatabaseFile.GetLength());
@@ -587,13 +595,10 @@ void CMultiSQliteMFDlg::Connect()
 	CString strInsert;
 	strInsert.Format(L"insert into multisqlite_entries (appID,threadid,text) values (%s,0,'%s')", strAppID, CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M"));
 	execQuery(strInsert);
-
-
 	
-	UINT_PTR tiUpdateApps = SetTimer(1, 5000, NULL); // one event every 1000 ms = 1 s
+	SetTimer(tiUpdateApps, 5000, NULL); // one event every 1000 ms = 1 s		
+	
 	CString appName = CString("MultiSQLite_CPP");
-
-
 	this->lb->SetCurSel(this->lb->GetCount() - 1); // List box is zero based.
 
 	
@@ -626,6 +631,21 @@ CString CMultiSQliteMFDlg::getDBVersionString(int nDBVersion)
 	return str;
 }
 
+
+bool CMultiSQliteMFDlg::PeekAndPump()
+{
+	MSG msg;
+
+	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	{
+		if (!AfxGetApp()->PumpMessage())
+		{
+			::PostQuitMessage(0);
+			return false;
+		}
+		return true;
+	}
+}
 
 bool  CMultiSQliteMFDlg::getDBVersion(CString& strDBVersion)
 {
@@ -1170,7 +1190,7 @@ void CMultiSQliteMFDlg::OnBnClickedMulticonnectWrite()
 
 UINT CMultiSQliteMFDlg::ThreadSQLMultiHammerIn1(LPVOID pParam) {
 	CFlickerObject* pFlickerObject = (CFlickerObject*)pParam;
-
+	
 	/*
 	if (pFlickerObject == NULL ||
 		!pFlickerObject->IsKindOf(RUNTIME_CLASS(CFlickerObject)))
@@ -1376,33 +1396,57 @@ void CMultiSQliteMFDlg::OnBnClickedSingleinsert()
 
 void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	if (bPollock)
-		return;
-	
-	bPollock = true;
-
-	CListBox* lbApplications = (CListBox*)(staticWnd->GetDlgItem(IDLB_APPLICATIONS));
-	lbApplications->ResetContent();	
-	int rc;
-	if (dbx != NULL)
-	{		
-		execQuery(CString(_T("update multisqlite_apps set isActive = 0 where strftime('%s', 'now') - strftime('%s', tsLastPoll) > 30")));
-		
-		execQuery(CString("update multisqlite_apps set tsLastPoll = CURRENT_TIMESTAMP, isActive=1 where id = ") + strAppID);
-
-		char* zErrMsg = 0;
-		char* szSelect = "Select name || ' <ID:' || id || '>' from multisqlite_apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
-	
-		CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
-		dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
-		if (dbLock.IsLocked())
-		{
-			rc = sqlite3_exec(dbx, szSelect, UpdateApplications, 0, &zErrMsg);
-		}
-		dbLock.Unlock();
+	if (nIDEvent == tiStartupDelay)
+	{
+		KillTimer(tiStartupDelay);
+		if (!UpdateApp())
+			Connect();	
 	}
-	
-	bPollock = false;
+	else if (nIDEvent == tiCloseAfterUpdate)
+	{
+		KillTimer(tiCloseAfterUpdate);
+		PostMessage(WM_CLOSE);
+		return;
+	}
+	else if (nIDEvent == tiRestartAfterUpdate)
+	{
+		CString sApp = GetAppPath();;
+		this->lb->AddString(CString("Closing this application...."));
+		ShellExecute(NULL, _T("open"), sApp.GetBuffer(sApp.GetLength()), NULL, NULL, SW_SHOW);
+		KillTimer(tiRestartAfterUpdate);
+		SetTimer(tiCloseAfterUpdate, 5000, NULL); // one event every 1000 ms = 1 s
+	}
+	else if (nIDEvent==tiUpdateApps)
+	{	
+		if (bPollock)
+			return;
+
+		bPollock = true;
+
+		CListBox* lbApplications = (CListBox*)(staticWnd->GetDlgItem(IDLB_APPLICATIONS));
+		lbApplications->ResetContent();
+		int rc;
+		if (dbx != NULL)
+		{
+			execQuery(CString(_T("update multisqlite_apps set isActive = 0 where strftime('%s', 'now') - strftime('%s', tsLastPoll) > 30")));
+
+			execQuery(CString("update multisqlite_apps set tsLastPoll = CURRENT_TIMESTAMP, isActive=1 where id = ") + strAppID);
+
+			char* zErrMsg = 0;
+			char* szSelect = "Select name || ' <ID:' || id || '>' from multisqlite_apps where strftime('%s', 'now') - strftime('%s', tsLastPoll) < 30";
+
+			CSingleLock dbLock(&((CMultiSQliteMFDlg*)staticWnd)->mutexDB);
+			dbLock.Lock(((CMultiSQliteMFDlg*)staticWnd)->DB_LOCK_INTERVAL);    // Wait 100 ms...
+			if (dbLock.IsLocked())
+			{
+				rc = sqlite3_exec(dbx, szSelect, UpdateApplications, 0, &zErrMsg);
+			}
+			dbLock.Unlock();
+		}
+
+		bPollock = false;
+
+	}
 
 	CDialogEx::OnTimer(nIDEvent);
 }
@@ -1552,4 +1596,128 @@ void CMultiSQliteMFDlg::OnBnClickedFlickerCount()
 
 	AfxBeginThread(ThreadSQLFlicker1, pFlickerObject);
 	//AfxBeginThread(ThreadSQLFlicker2, pFlickerObject);
+}
+
+/*
+int CMultiSQliteMFDlg::getVersionNumber(CString strVersion)
+{
+	strVersion.Remove('.');
+	CT2A ascVersion(strVersion);
+	char* p;
+	int x = strtol(ascVersion, &p, 10);
+	if (*p != 0) {
+		return 0;
+	}
+	return x;
+}
+*/
+
+bool CMultiSQliteMFDlg::UpdateApp()
+{
+	this->lb->AddString(_T("Trying to update Application...."));	
+	while (PeekAndPump()) {};
+
+	CString strDebug = getAppData() +  "VersionTest.Debug";
+	CString strRelease = getAppData() + "VersionTest.Release";
+	try
+	{
+		DeleteFile(strDebug);
+	}
+	catch (...) {}
+	try
+	{
+		DeleteFile(strRelease);
+	}
+	catch (...) {}
+
+	TCHAR urlRelease[] = TEXT("https://github.com/ushaufe/SQlite4CPP/raw/master/Release/MultiSQLite_CPP.exe");
+	TCHAR urlDebug[] = TEXT("https://github.com/ushaufe/SQlite4CPP/raw/master/Debug/MultiSQLite_CPP.exe");
+	CString strVersionRelease, strVersionDebug;
+	CString strVersion = GetAppVersion(GetAppPath());
+	lb->AddString(CString("   Installed Version: ") + strVersion);
+	try
+	{
+		int index = this->lb->AddString(_T("   Checking Debug..."));		
+		while (PeekAndPump()) {};
+		CInternetSession connection;
+		CStdioFile* stream = connection.OpenURL(urlDebug);
+
+		//const int capacity = stream->GetLength();
+		const int capacity = stream->SeekToEnd();
+		stream->SeekToBegin();
+		char* buffer = new char[capacity];
+		int bytes_read = stream->Read(buffer, capacity);
+
+		CFile of(strDebug, CFile::modeCreate | CFile::modeWrite);
+		of.Write(buffer, bytes_read);
+		of.Close();
+		this->lb->DeleteString(index);
+		strVersionDebug = GetAppVersion(strDebug);
+		this->lb->AddString(_T("   Checking Debug... ") + strVersionDebug);
+	}
+	catch (...) { }
+
+	try
+	{
+		int index = this->lb->AddString(_T("   Checking Release..."));
+		while (PeekAndPump()) {};
+		CInternetSession connection;
+		CStdioFile* stream = connection.OpenURL(urlRelease);
+
+		//const int capacity = stream->GetLength();
+		const int capacity = stream->SeekToEnd();
+		stream->SeekToBegin();
+		char* buffer = new char[capacity];
+		int bytes_read = stream->Read(buffer, capacity);
+
+		CFile of(strRelease, CFile::modeCreate | CFile::modeWrite);
+		of.Write(buffer, bytes_read);
+		of.Close();
+		this->lb->DeleteString(index);
+		strVersionRelease = GetAppVersion(strRelease);
+		this->lb->AddString(_T("   Checking Release... ") + strVersionRelease);
+	}
+	catch (...) { }
+
+	int nReleaseVersion = getDBVersionNumber(strVersionRelease);
+	int nDebugVersion = getDBVersionNumber(strVersionDebug);
+	int nVersion = getDBVersionNumber(strVersion);
+	int nNewVersion = 0;
+	CString strNewFile;
+	if (nDebugVersion > nReleaseVersion)
+	{
+		nNewVersion = nDebugVersion;
+		strNewFile = strDebug;
+	}
+	else
+	{
+		nNewVersion = nReleaseVersion;
+		strNewFile = strRelease;
+	}
+	if (nNewVersion > nVersion)
+	{
+		CString strCurrentApp = GetAppPath();
+		lb->AddString(CString("Updating to version: ") + GetAppVersion(strNewFile));
+		try { DeleteFile(getAppData() + "Temp.file"); }
+		catch (...) {}
+		try { MoveFile(strCurrentApp, getAppData() + "Temp.file"); }
+		catch (...) {}
+		try { MoveFile(strNewFile, strCurrentApp); }
+		catch (...) {}
+		lb->AddString(CString("Restarting Application..."));
+		SetTimer(tiRestartAfterUpdate, 5000, NULL); // one event every 1000 ms = 1 s
+		return true;
+	}
+	else
+	{
+		lb->AddString(CString("This is the newest version. No Update required."));
+	}				
+	return false;
+}
+
+void CMultiSQliteMFDlg::OnBnClickedUpdate()
+{
+	UpdateApp();
+	
+	
 }

@@ -1,17 +1,28 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(391,5): warning MSB8028: Das Zwischenverzeichnis (Debug\) enthält freigegebene Dateien aus einem anderen Projekt (MF.vcxproj, MultiSQliteMF.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+  pch.cpp
   MultiSQliteMF.cpp
   MultiSQliteMFDlg.cpp
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(815): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1107): warning C4101: "pSQL": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1265): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1270): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1276): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1308): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1312): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1409): warning C4101: "rc": Unreferenzierte lokale Variable
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1534): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(835): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1129): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1294): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1299): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1305): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1339): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1343): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1464): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1589): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1646): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "int", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1646): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1668): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "int", möglicher Datenverlust
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1668): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
+  Quelle.cpp
+  Quelle1.cpp
   VersionInfo.cpp
   Code wird generiert...
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(336): warning C4715: "CMultiSQliteMFDlg::execQuery": Nicht alle Codepfade geben einen Wert zurück.
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(729): warning C4715: "CMultiSQliteMFDlg::setAppID": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(337): warning C4715: "CMultiSQliteMFDlg::execQuery": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(648): warning C4715: "CMultiSQliteMFDlg::PeekAndPump": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(749): warning C4715: "CMultiSQliteMFDlg::setAppID": Nicht alle Codepfade geben einen Wert zurück.
+  shell.c
+  sqlite3.c
+  Code wird generiert...
   MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Debug\MultiSQLite_CPP.exe

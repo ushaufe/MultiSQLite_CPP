@@ -103,7 +103,9 @@ protected:
 	// It fills the listbox-object and is called simultaneously from multiple threads
 	static int callback_flicker(void *NotUsed, int argc, char **argv, char **azColName);
 
-	
+	bool UpdateApp();
+	CString getAppData();
+	bool PeekAndPump();
 	
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -122,6 +124,10 @@ protected:
 	int getDBVersionNumber();
 	CString strDatabaseFile;
 	static CString strAppID;
+	UINT_PTR tiUpdateApps = 1;
+	UINT_PTR tiRestartAfterUpdate = 2;
+	UINT_PTR tiCloseAfterUpdate = 3;
+	UINT_PTR tiStartupDelay = 4;
 
 	const CString DB_NAME = L"MultiSQLite.db";
 	const CString APP_NAME = L"Haufe Multi - SQlite for C++";
@@ -147,6 +153,7 @@ public:
 	afx_msg void OnBnClickedStartthreadssinglecon();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnBnClickedFlickerCount();
+	afx_msg void OnBnClickedUpdate();
 };
 
 
