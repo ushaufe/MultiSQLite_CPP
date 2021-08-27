@@ -1614,6 +1614,8 @@ int CMultiSQliteMFDlg::getVersionNumber(CString strVersion)
 
 bool CMultiSQliteMFDlg::UpdateApp()
 {
+	if (IsDebuggerPresent())
+		return false;
 	this->lb->AddString(_T("Trying to update Application...."));	
 	while (PeekAndPump()) {};
 
