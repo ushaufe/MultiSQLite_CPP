@@ -14,15 +14,12 @@ c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1665): warning C4244: 
 c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1665): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
 c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1687): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "int", möglicher Datenverlust
 c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(1687): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
-  Quelle.cpp
-  Quelle1.cpp
   VersionInfo.cpp
   shell.c
   sqlite3.c
   Code wird generiert.
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(661): warning C4715: "CMultiSQliteMFDlg::PeekAndPump": Nicht alle Codepfade geben einen Wert zurück.
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(762): warning C4715: "CMultiSQliteMFDlg::setAppID": Nicht alle Codepfade geben einen Wert zurück.
-c:\projects\sqlite4cpp\multisqlitemf\multisqlitemfdlg.cpp(344): warning C4715: "CMultiSQliteMFDlg::execQuery": Nicht alle Codepfade geben einen Wert zurück.
-  All 2939 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  0 of 2939 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Codegenerierung ist abgeschlossen.
   MultiSQliteMF.vcxproj -> C:\Projects\SQlite4CPP\Release\MultiSQLite_CPP.exe
