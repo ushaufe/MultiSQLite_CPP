@@ -103,6 +103,13 @@ CMultiSQliteMFDlg::CMultiSQliteMFDlg(CWnd* pParent /*=nullptr*/)
 	bFlickerLock2 = false;
 
 	bPollock = false;
+
+#if defined _DEBUG
+	bIsDebug = true;
+#else
+	bIsDebug = false;
+#endif
+
 }
 
 void CMultiSQliteMFDlg::DoDataExchange(CDataExchange* pDX)
@@ -211,11 +218,11 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	MoveWindow(rc.left, rc.top, 1200, 800);
 
 	lb = (CListBox*)GetDlgItem(IDC_LIST);
-
+	CString strVersionPrefix = bIsDebug ? L" (Debug)" : L" (Release)";
+	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath()) + strVersionPrefix;
 	lb->AddString(CString( APP_NAME ));
-	lb->AddString(CString("Version: ") + GetAppVersion(GetAppPath()));
-	CStatic* lblVersion =  (CStatic*)GetDlgItem(IDC_VERSION);
-	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath());
+	lb->AddString(strVersion);
+	CStatic* lblVersion =  (CStatic*)GetDlgItem(IDC_VERSION);	
 	lblVersion->SetWindowText( strVersion);	
 	
 	/*
@@ -636,14 +643,20 @@ bool CMultiSQliteMFDlg::PeekAndPump()
 {
 	MSG msg;
 
+	/*
+	if (!bIsDebug)
+		return false;
+    */		
+
 	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	{
 		if (!AfxGetApp()->PumpMessage())
 		{
 			::PostQuitMessage(0);
-			return false;
+			return false;			
 		}
-		return true;
+		//return true;		
+		return false;
 	}
 }
 
@@ -1398,7 +1411,12 @@ void CMultiSQliteMFDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == tiStartupDelay)
 	{
-		KillTimer(tiStartupDelay);
+		KillTimer(tiStartupDelay);					
+		if (IsDebuggerPresent())
+		{
+			Connect();
+			return;
+		}
 		if (!UpdateApp())
 			Connect();	
 	}
@@ -1614,11 +1632,10 @@ int CMultiSQliteMFDlg::getVersionNumber(CString strVersion)
 
 bool CMultiSQliteMFDlg::UpdateApp()
 {
-	if (IsDebuggerPresent())
-		return false;
-	this->lb->AddString(_T("Trying to update Application...."));	
-	while (PeekAndPump()) {};
 
+	this->lb->AddString(_T("Trying to update Application ...."));		
+	while (PeekAndPump()) {};
+	
 	CString strDebug = getAppData() +  "VersionTest.Debug";
 	CString strRelease = getAppData() + "VersionTest.Release";
 	try
@@ -1719,7 +1736,5 @@ bool CMultiSQliteMFDlg::UpdateApp()
 
 void CMultiSQliteMFDlg::OnBnClickedUpdate()
 {
-	UpdateApp();
-	
-	
+	UpdateApp();	
 }

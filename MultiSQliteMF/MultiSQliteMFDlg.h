@@ -72,7 +72,7 @@ public:
 	// This must be defined static so that the threads can access it outside of 
 	// the instance-contect
 	static CWnd* staticWnd;
-
+	bool bIsDebug = false;
 	CFlickerObject* pFlickerObject;
 	int nNumberThreads;
 

@@ -70,7 +70,7 @@ CString GetAppVersion(CString sApplication)
 		}
 		delete[] verData;
 	}
-	return sVersion;
+	return sVersion.Trim();
 }
 
 /*
