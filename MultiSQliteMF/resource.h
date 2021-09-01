@@ -16,6 +16,7 @@
 #define IDB_CPP48                       151
 #define IDB_BACKGROUND2                 160
 #define IDI_ICON1                       163
+#define IDR_MENU                        164
 #define IDC_BTN_CONNECT                 1000
 #define IDC_LIST                        1001
 #define IDC_Multithread                 1002
@@ -40,14 +41,21 @@
 #define IDC_LBL_NUMBER_THREADS          1034
 #define IDC_BUTTON2                     1037
 #define BTN_Update                      1037
+#define ID_FILE_EXIT                    32771
+#define ID_FILE_CONNECT                 32772
+#define ID_FILE_DISCONNECT              32773
+#define ID_HELP_ABOUT                   32774
+#define ID_HELP_UPDATE                  32775
+#define ID_ACTIONS_STARTTHREADS         32776
+#define ID_ACTIONS_STOPTHREADS          32777
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1038
+#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_COMMAND_VALUE         32778
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

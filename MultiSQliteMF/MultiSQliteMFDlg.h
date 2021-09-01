@@ -11,10 +11,12 @@
 #include "sqlite/sqlite3.h"
 #include "VersionInfo.h"
 
+
 class CFlickerObject : public CObject {
 
 };
 
+class CAboutDlg;
 
 // CMultiSQliteMFDlg dialog
 class CMultiSQliteMFDlg : public CDialogEx
@@ -41,6 +43,8 @@ public:
 	const int DB_VERSION_MAX = 2000;
 	const CString DB_VERSION_STR = L"2.0.0.0";
 
+	CMenu *menu;
+
 	protected:
 	// A handle to the ListBox must be kept static
 	// so that the different threads have access to the GUI
@@ -63,6 +67,7 @@ public:
 	// from the threads and hence outside of the 
 	// context of the class
 	
+	CAboutDlg* aboutDlg;
 
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	
@@ -115,7 +120,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	
 	void Connect();
+	void Disconnect();
 	boolean execQuery(CString strQuery);
+	void UpdateMenuItems();
 	boolean setAppID();
 	bool getSQLInt(CString strSQL,int &nInt);
 	bool getDBVersion(CString& strDBVersion);
@@ -154,6 +161,14 @@ public:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnBnClickedFlickerCount();
 	afx_msg void OnBnClickedUpdate();
+	afx_msg void OnFileExit();	
+	afx_msg void OnFileDisconnect();	
+	afx_msg void OnUpdateWindowNew(CCmdUI* pCmdUI);
+	afx_msg void OnHelpAbout();
+	afx_msg void OnHelpUpdate();
+	afx_msg void OnActionsStartthreads();
+	afx_msg void OnActionsStopthreads();
+	afx_msg void OnFileConnect();
 };
 
 

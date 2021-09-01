@@ -1,2 +1,2 @@
 #TargetFrameworkVersion=v4.0:PlatformToolSet=v141:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit:WindowsTargetPlatformVersion=10.0.18362.0
-Release|Win32|C:\Projects\SQlite4CPP\|
+Release|x64|C:\Projects\MultiSQLite_CPP\|

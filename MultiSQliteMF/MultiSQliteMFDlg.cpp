@@ -49,12 +49,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
@@ -139,10 +139,22 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(BTN_FLICKER_COUNT, &CMultiSQliteMFDlg::OnBnClickedFlickerCount)
 	ON_BN_CLICKED(BTN_Update, &CMultiSQliteMFDlg::OnBnClickedUpdate)
+	ON_COMMAND(ID_FILE_EXIT, &CMultiSQliteMFDlg::OnFileExit)	
+	ON_COMMAND(ID_FILE_DISCONNECT, &CMultiSQliteMFDlg::OnFileDisconnect)	
+	ON_COMMAND(ID_FILE_CONNECT, &CMultiSQliteMFDlg::OnFileConnect)
+	ON_COMMAND(ID_HELP_ABOUT, &CMultiSQliteMFDlg::OnHelpAbout)
+	ON_COMMAND(ID_HELP_UPDATE, &CMultiSQliteMFDlg::OnHelpUpdate)
+	ON_COMMAND(ID_ACTIONS_STARTTHREADS, &CMultiSQliteMFDlg::OnActionsStartthreads)
+	ON_COMMAND(ID_ACTIONS_STOPTHREADS, &CMultiSQliteMFDlg::OnActionsStopthreads)	
 END_MESSAGE_MAP()
 
 
 // CMultiSQliteMFDlg message handlers
+void CMultiSQliteMFDlg::OnUpdateWindowNew(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(FALSE);
+	pCmdUI->SetCheck(1);
+}
 
 BOOL CMultiSQliteMFDlg::OnInitDialog()
 {
@@ -150,6 +162,10 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	//font.CreatePointFont(16, _T("Arial"));
 	
 	CDialogEx::OnInitDialog();
+	menu = new CMenu();
+	menu->LoadMenu(IDR_MENU);
+	SetMenu(menu);	
+
 	CScrollBar* scrollBarNumberThreads = (CScrollBar*)GetDlgItem(IDC_SLIDER_NUMBER_THREADS);
 	staticWnd = this;
 	nNumberThreads = 1;
@@ -232,6 +248,7 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 	APP_DB_NAME = strProcessName;
 	MessageBox(APP_DB_NAME);
 	*/
+	UpdateMenuItems();
 
 	SetTimer(tiStartupDelay, 2000, NULL); // one event every 1000 ms = 1 s	
 
@@ -396,18 +413,34 @@ int CMultiSQliteMFDlg::getDBVersionNumber()
 	return getDBVersionNumber(strDBVersion);
 }
 
+void CMultiSQliteMFDlg::Disconnect()
+{
+	if (dbx == NULL)
+	{
+		this->lb->AddString(L"Error: Not yet connected!");
+		return;
+	}
+	sqlite3_close_v2(dbx);	
+	dbx = NULL;
+	this->lb->AddString(L"Database is closed.");
+}
+
 void CMultiSQliteMFDlg::Connect()
 {		
 	// This connection is not to be used by threads
 	// It should simply simulate the easiest case (simple access to SQlite)
 	// In order to rule out errors in the more complex cases
 	
+	//CButton* mnuItemConnect = (CButton*)GetDlgItem(ID_FILE_CONNECT);
+	//CButton* mnuItemDisconnect = (CButton*)GetDlgItem(ID_FILE_DISCONNECT);
+	
+	UpdateMenuItems();
 	if (dbx != NULL) {
 		this->lb->AddString(L"Error: Already Connected!");
 		return;
 	}
 
-
+	
 		
 	strDatabaseFile = getAppData() + DB_NAME;
 	//const char* szDatabaseFile = (LPCTSTR)strDatabaseFile;
@@ -454,12 +487,13 @@ void CMultiSQliteMFDlg::Connect()
 	char* zErrMsg = 0;
 	//const char* pSQL[STATEMENTS];
 	
-
+	UpdateMenuItems();
 
 	if (rc != SQLITE_OK)
 	{
 		dbx = NULL;
 		this->lb->AddString(L"Error: Cant connect!");
+		UpdateMenuItems();
 	}
 	else
 	{
@@ -536,9 +570,12 @@ void CMultiSQliteMFDlg::Connect()
 
 		if (dbx == NULL) {
 			this->lb->AddString(L"Error: Database is not working");
+			UpdateMenuItems();
 			return;
 		}
 	}
+
+	UpdateMenuItems();
 
 	if (bDatabaseExisted)
 	{		
@@ -1490,8 +1527,33 @@ void CMultiSQliteMFDlg::OnClose()
 }
 
 
+void CMultiSQliteMFDlg::UpdateMenuItems()
+{
+	if (((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())
+	{
+		menu->EnableMenuItem(ID_ACTIONS_STARTTHREADS, MF_DISABLED | MF_GRAYED);
+		menu->EnableMenuItem(ID_ACTIONS_STOPTHREADS, MF_ENABLED | MF_DEFAULT);
+	}
+	else
+	{
+		menu->EnableMenuItem(ID_ACTIONS_STARTTHREADS, MF_ENABLED | MF_DEFAULT);
+		menu->EnableMenuItem(ID_ACTIONS_STOPTHREADS, MF_DISABLED | MF_GRAYED);
+	}
+	if (dbx == NULL)
+	{
+		menu->EnableMenuItem(ID_FILE_CONNECT, MF_ENABLED | MF_DEFAULT);
+		menu->EnableMenuItem(ID_FILE_DISCONNECT, MF_DISABLED | MF_GRAYED);
+	}
+	else
+	{
+		menu->EnableMenuItem(ID_FILE_CONNECT, MF_DISABLED | MF_GRAYED);
+		menu->EnableMenuItem(ID_FILE_DISCONNECT, MF_ENABLED | MF_DEFAULT);
+	}
+}
+
 void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
 {	
+	UpdateMenuItems();
 	if (dbx == NULL)
 	{
 		CButton* btn = (CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon);
@@ -1502,10 +1564,11 @@ void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
 	lb = (CListBox*)GetDlgItem(IDC_LIST);
 
 	if (!((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->GetCheck())
-	{
+	{	
 		lb->AddString(_T("Terminate all Threads..."));
 		return;
 	}
+	
 
 	pFlickerObject = new CFlickerObject();
 	CString strStartThreads;
@@ -1649,8 +1712,8 @@ bool CMultiSQliteMFDlg::UpdateApp()
 	}
 	catch (...) {}
 
-	TCHAR urlRelease[] = TEXT("https://github.com/ushaufe/SQlite4CPP/raw/master/Release/MultiSQLite_CPP.exe");
-	TCHAR urlDebug[] = TEXT("https://github.com/ushaufe/SQlite4CPP/raw/master/Debug/MultiSQLite_CPP.exe");
+	TCHAR urlRelease[] = TEXT("https://github.com/ushaufe/MultiSQLite_CPP/raw/master/Release/MultiSQLite_CPP.exe");
+	TCHAR urlDebug[] = TEXT("https://github.com/ushaufe/MultiSQLite_CPP/raw/master/Debug/MultiSQLite_CPP.exe");
 	CString strVersionRelease, strVersionDebug;
 	CString strVersion = GetAppVersion(GetAppPath());
 	lb->AddString(CString("   Installed Version: ") + strVersion);
@@ -1737,4 +1800,78 @@ bool CMultiSQliteMFDlg::UpdateApp()
 void CMultiSQliteMFDlg::OnBnClickedUpdate()
 {
 	UpdateApp();	
+}
+
+
+void CMultiSQliteMFDlg::OnFileExit()
+{
+	PostMessage(WM_CLOSE);
+}
+
+
+
+
+
+
+
+	
+
+
+void CMultiSQliteMFDlg::OnHelpAbout()
+{
+	
+
+	// Invoking the Dialog
+	CDialog dlg(IDD_ABOUTBOX);
+	dlg.DoModal();	
+	return;
+	aboutDlg = new CAboutDlg();
+
+	//if (aboutDlg != NULL)
+	{
+		BOOL ret = aboutDlg->Create(IDD_ABOUTBOX, this);
+
+		if (!ret)   //Create failed.
+		{
+			AfxMessageBox(_T("Error creating Dialog"));
+		}
+		//aboutDlg->ShowWindow(SW_SHOW);
+		aboutDlg->DoModal();
+	}
+
+	// Delete the dialog once done
+	delete aboutDlg;
+}
+
+
+void CMultiSQliteMFDlg::OnHelpUpdate()
+{
+	UpdateApp();
+}
+
+
+void CMultiSQliteMFDlg::OnActionsStartthreads()
+{
+	((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->SetCheck(true);
+	OnBnClickedStartthreadssinglecon();
+}
+
+
+void CMultiSQliteMFDlg::OnActionsStopthreads()
+{
+	((CButton*)staticWnd->GetDlgItem(BTN_StartThreadsSingleCon))->SetCheck(false);
+	OnBnClickedStartthreadssinglecon();
+}
+
+
+void CMultiSQliteMFDlg::OnFileDisconnect()
+{
+	Disconnect();
+	UpdateMenuItems();
+}
+
+void CMultiSQliteMFDlg::OnFileConnect()
+{
+	Connect();
+	UpdateMenuItems();
 }
