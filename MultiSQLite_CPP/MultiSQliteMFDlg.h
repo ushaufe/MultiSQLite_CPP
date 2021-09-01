@@ -172,6 +172,7 @@ public:
 	afx_msg void OnHelpShowgithubprojectforc();
 	afx_msg void OnHelpShowgithubprojectforcs();
 	afx_msg void OnActionsStartmultisqliteforCs();
+	afx_msg void OnActionsStartmultisqliteforCpp();
 };
 
 

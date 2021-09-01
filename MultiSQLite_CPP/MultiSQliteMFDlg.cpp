@@ -150,6 +150,7 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORC, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforc)
 	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORCS, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs)
 	ON_COMMAND(ID_ACTIONS_STARTMULTISQLITEFOR_CS, &CMultiSQliteMFDlg::OnActionsStartmultisqliteforCs)
+	ON_COMMAND(ID_ACTIONS_STARTMULTISQLITEFOR_CPP, &CMultiSQliteMFDlg::OnActionsStartmultisqliteforCpp)
 END_MESSAGE_MAP()
 
 
@@ -1561,11 +1562,17 @@ void CMultiSQliteMFDlg::UpdateMenuItems()
 	if (strAppFolder[strAppFolder.GetLength() - 1] != '\\')
 		strAppFolder += "\\";
 	CString strMultiSQLite_CS = strAppFolder + "MultiSQLite_CS.exe";
+	CString strMultiSQLite_CPP = strAppFolder + "MultiSQLite_CPP.exe";
 
 	if (PathFileExists(strMultiSQLite_CS))	
 		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CS, MF_ENABLED | MF_DEFAULT);
 	else
 		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CS, MF_DISABLED | MF_GRAYED);
+
+	if (PathFileExists(strMultiSQLite_CPP))
+		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CPP, MF_ENABLED | MF_DEFAULT);
+	else
+		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CPP, MF_DISABLED | MF_GRAYED);
 }
 
 void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
@@ -1920,4 +1927,21 @@ void CMultiSQliteMFDlg::OnActionsStartmultisqliteforCs()
 	{
 		HINSTANCE hr = ShellExecute(NULL, _T("open"), strMultiSQLite_CS, NULL, NULL, SW_SHOWNORMAL);
 	}		
+}
+
+
+void CMultiSQliteMFDlg::OnActionsStartmultisqliteforCpp()
+{
+	CString strAppFolder = GetAppDir();
+	if (strAppFolder.GetLength() == 0)
+		return;
+
+	if (strAppFolder[strAppFolder.GetLength() - 1] != '\\')
+		strAppFolder += "\\";
+	CString strMultiSQLite_CS = strAppFolder + "MultiSQLite_CPP.exe";
+
+	if (PathFileExists(strMultiSQLite_CS))
+	{
+		HINSTANCE hr = ShellExecute(NULL, _T("open"), strMultiSQLite_CS, NULL, NULL, SW_SHOWNORMAL);
+	}
 }
