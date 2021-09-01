@@ -1966,11 +1966,11 @@ void CMultiSQliteMFDlg::OnShowManual()
 
 	lb->AddString(_T("Showing Manual"));
 	
-	CString strManual = strAppFolder + "Haufe_MultiSQLite_CPP_Manual.pdf";
+	CString strManual = CString(L"\"") + strAppFolder + "Haufe_MultiSQLite_CPP_Manual.pdf\"";
 	CString strManualNew = strAppFolder + "Haufe_MultiSQLite_CS_Manual.new";
 	CString strViewer = strAppFolder + "Viewer.exe";
-	TCHAR urlManual[] = TEXT("https://raw.githubusercontent.com/ushaufe/MultiSQLite_CS/master/Doc/Haufe_MultiSQLite_CS_Manual.pdf");
-	TCHAR urlViewer[] = TEXT("https://raw.githubusercontent.com/ushaufe/MultiSQLite_CS/master/Tools/Viewer.exe");
+	TCHAR urlManual[] = TEXT("https://github.com/ushaufe/MultiSQLite_CPP/raw/master/Doc/Manual.pdf/Haufe_MultiSQLite_CPP_Manual.pdf");
+	TCHAR urlViewer[] = TEXT("https://github.com/ushaufe/MultiSQLite_CS/raw/master/Tools/Viewer.exe");
 
 	try	
 	{
