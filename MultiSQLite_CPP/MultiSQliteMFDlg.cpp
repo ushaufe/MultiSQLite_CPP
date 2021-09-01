@@ -13,6 +13,7 @@
 #include <fileapi.h>
 #include <atlconv.h> // for CT2A
 #include "resource.h"		// main sy
+#include "VersionInfo.h"
 //#include "GlobalFunctions.h"
 // Connection pooling
 // https://dev.yorhel.nl/doc/sqlaccess
@@ -61,7 +62,7 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBtnClickedFlickerCount();
+	afx_msg void OnBtnClickedFlickerCount();	
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -73,7 +74,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)	
 END_MESSAGE_MAP()
 
 
@@ -148,6 +149,7 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_COMMAND(ID_ACTIONS_STOPTHREADS, &CMultiSQliteMFDlg::OnActionsStopthreads)	
 	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORC, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforc)
 	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORCS, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs)
+	ON_COMMAND(ID_ACTIONS_STARTMULTISQLITEFOR_CS, &CMultiSQliteMFDlg::OnActionsStartmultisqliteforCs)
 END_MESSAGE_MAP()
 
 
@@ -1551,6 +1553,19 @@ void CMultiSQliteMFDlg::UpdateMenuItems()
 		menu->EnableMenuItem(ID_FILE_CONNECT, MF_DISABLED | MF_GRAYED);
 		menu->EnableMenuItem(ID_FILE_DISCONNECT, MF_ENABLED | MF_DEFAULT);
 	}
+
+	CString strAppFolder = GetAppDir();
+	if (strAppFolder.GetLength() == 0)
+		return;
+
+	if (strAppFolder[strAppFolder.GetLength() - 1] != '\\')
+		strAppFolder += "\\";
+	CString strMultiSQLite_CS = strAppFolder + "MultiSQLite_CS.exe";
+
+	if (PathFileExists(strMultiSQLite_CS))	
+		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CS, MF_ENABLED | MF_DEFAULT);
+	else
+		menu->EnableMenuItem(ID_ACTIONS_STARTMULTISQLITEFOR_CS, MF_DISABLED | MF_GRAYED);
 }
 
 void CMultiSQliteMFDlg::OnBnClickedStartthreadssinglecon()
@@ -1888,4 +1903,21 @@ void CMultiSQliteMFDlg::OnHelpShowgithubprojectforc()
 void CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs()
 {
 	::ShellExecute(NULL, NULL, L"https://github.com/ushaufe/MultiSQLite_CS", NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CMultiSQliteMFDlg::OnActionsStartmultisqliteforCs()
+{
+	CString strAppFolder = GetAppDir();
+	if (strAppFolder.GetLength() == 0)
+		return;
+	
+	if (strAppFolder[strAppFolder.GetLength() - 1] != '\\')
+		strAppFolder += "\\";
+	CString strMultiSQLite_CS = strAppFolder + "MultiSQLite_CS.exe";
+
+	if (PathFileExists(strMultiSQLite_CS))
+	{
+		HINSTANCE hr = ShellExecute(NULL, _T("open"), strMultiSQLite_CS, NULL, NULL, SW_SHOWNORMAL);
+	}		
 }

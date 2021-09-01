@@ -13,6 +13,7 @@
 CString GetAppVersion(CString sApplication);
 CString GetAppPath();
 CString GetAppDir();
+CString GetContainingFolder(CString& file);
 
 /*
 class CGlobalFunctions  : public CObject

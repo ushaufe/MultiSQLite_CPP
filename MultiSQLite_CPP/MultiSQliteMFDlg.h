@@ -171,6 +171,7 @@ public:
 	afx_msg void OnFileConnect();
 	afx_msg void OnHelpShowgithubprojectforc();
 	afx_msg void OnHelpShowgithubprojectforcs();
+	afx_msg void OnActionsStartmultisqliteforCs();
 };
 
 
