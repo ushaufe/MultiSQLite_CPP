@@ -151,6 +151,7 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORCS, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs)
 	ON_COMMAND(ID_ACTIONS_STARTMULTISQLITEFOR_CS, &CMultiSQliteMFDlg::OnActionsStartmultisqliteforCs)
 	ON_COMMAND(ID_ACTIONS_STARTMULTISQLITEFOR_CPP, &CMultiSQliteMFDlg::OnActionsStartmultisqliteforCpp)
+	ON_COMMAND(ID_SHOW_MANUAL, &CMultiSQliteMFDlg::OnShowManual)
 END_MESSAGE_MAP()
 
 
@@ -1940,8 +1941,106 @@ void CMultiSQliteMFDlg::OnActionsStartmultisqliteforCpp()
 		strAppFolder += "\\";
 	CString strMultiSQLite_CS = strAppFolder + "MultiSQLite_CPP.exe";
 
-	if (PathFileExists(strMultiSQLite_CS))
+	try
 	{
-		HINSTANCE hr = ShellExecute(NULL, _T("open"), strMultiSQLite_CS, NULL, NULL, SW_SHOWNORMAL);
+		if (PathFileExists(strMultiSQLite_CS))
+		{
+			HINSTANCE hr = ShellExecute(NULL, _T("open"), strMultiSQLite_CS, NULL, NULL, SW_SHOWNORMAL);
+		}
+	}
+	catch (...)
+	{
+
+	}
+}
+
+
+void CMultiSQliteMFDlg::OnShowManual()
+{
+	CString strAppFolder = GetAppDir();
+	if (strAppFolder.GetLength() == 0)
+		return;
+
+	if (strAppFolder[strAppFolder.GetLength() - 1] != '\\')
+		strAppFolder += "\\";
+
+	lb->AddString(_T("Showing Manual"));
+	
+	CString strManual = strAppFolder + "Haufe_MultiSQLite_CPP_Manual.pdf";
+	CString strManualNew = strAppFolder + "Haufe_MultiSQLite_CS_Manual.new";
+	CString strViewer = strAppFolder + "Viewer.exe";
+	TCHAR urlManual[] = TEXT("https://raw.githubusercontent.com/ushaufe/MultiSQLite_CS/master/Doc/Haufe_MultiSQLite_CS_Manual.pdf");
+	TCHAR urlViewer[] = TEXT("https://raw.githubusercontent.com/ushaufe/MultiSQLite_CS/master/Tools/Viewer.exe");
+
+	try	
+	{
+		if (PathFileExists(strManualNew))
+			DeleteFile(strManualNew);
+	}
+	catch(...) {}
+
+	try
+	{
+		this->lb->AddString(_T("   Trying download latest version..."));
+		while (PeekAndPump()) {};
+		CInternetSession connection;
+		CStdioFile* stream = connection.OpenURL(urlManual);
+
+		//const int capacity = stream->GetLength();
+		const int capacity = stream->SeekToEnd();
+		stream->SeekToBegin();
+		char* buffer = new char[capacity];
+		int bytes_read = stream->Read(buffer, capacity);
+
+		CFile of(strManualNew, CFile::modeCreate | CFile::modeWrite);
+		of.Write(buffer, bytes_read);
+		of.Close();
+		if (PathFileExists(strManualNew))
+			this->lb->AddString(_T("   New Manual Downloaded"));
+	}
+	catch (...)
+	{}
+	try
+	{
+		if (PathFileExists(strManualNew))
+		{
+			DeleteFile(strManual);
+			MoveFile(strManualNew, strManual);
+		}
+	}
+	catch (...) {}
+	try
+	{
+		if (!PathFileExists(strViewer))
+		{
+			this->lb->AddString(_T("   Trying downloading Viewer"));
+			while (PeekAndPump()) {};
+			CInternetSession connection;
+			CStdioFile* stream = connection.OpenURL(urlViewer);
+
+			//const int capacity = stream->GetLength();
+			const int capacity = stream->SeekToEnd();
+			stream->SeekToBegin();
+			char* buffer = new char[capacity];
+			int bytes_read = stream->Read(buffer, capacity);
+
+			CFile of(strViewer, CFile::modeCreate | CFile::modeWrite);
+			of.Write(buffer, bytes_read);
+			of.Close();
+			if (PathFileExists(strViewer))
+				this->lb->AddString(_T("   Viewer downloaded"));
+		}
+	}
+	catch (...) {}
+	try
+	{
+		if (PathFileExists(strViewer))
+		{
+			HINSTANCE hr = ShellExecute(NULL, _T("open"), strViewer, strManual, NULL, SW_SHOWNORMAL);
+		}
+	}
+	catch (...)
+	{
+
 	}
 }
