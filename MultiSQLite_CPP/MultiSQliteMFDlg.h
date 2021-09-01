@@ -169,6 +169,8 @@ public:
 	afx_msg void OnActionsStartthreads();
 	afx_msg void OnActionsStopthreads();
 	afx_msg void OnFileConnect();
+	afx_msg void OnHelpShowgithubprojectforc();
+	afx_msg void OnHelpShowgithubprojectforcs();
 };
 
 

@@ -146,6 +146,8 @@ BEGIN_MESSAGE_MAP(CMultiSQliteMFDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_UPDATE, &CMultiSQliteMFDlg::OnHelpUpdate)
 	ON_COMMAND(ID_ACTIONS_STARTTHREADS, &CMultiSQliteMFDlg::OnActionsStartthreads)
 	ON_COMMAND(ID_ACTIONS_STOPTHREADS, &CMultiSQliteMFDlg::OnActionsStopthreads)	
+	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORC, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforc)
+	ON_COMMAND(ID_HELP_SHOWGITHUBPROJECTFORCS, &CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs)
 END_MESSAGE_MAP()
 
 
@@ -1874,4 +1876,16 @@ void CMultiSQliteMFDlg::OnFileConnect()
 {
 	Connect();
 	UpdateMenuItems();
+}
+
+
+void CMultiSQliteMFDlg::OnHelpShowgithubprojectforc()
+{
+	::ShellExecute(NULL, NULL, L"https://github.com/ushaufe/MultiSQLite_CPP", NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CMultiSQliteMFDlg::OnHelpShowgithubprojectforcs()
+{
+	::ShellExecute(NULL, NULL, L"https://github.com/ushaufe/MultiSQLite_CS", NULL, NULL, SW_SHOWNORMAL);
 }

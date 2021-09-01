@@ -1,0 +1,28 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\Microsoft.CppBuild.targets(391,5): warning MSB8028: Das Zwischenverzeichnis (Debug\) enthält freigegebene Dateien aus einem anderen Projekt (MF.vcxproj, MultiSQliteMF.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+  pch.cpp
+  MultiSQliteMF.cpp
+  MultiSQliteMFDlg.cpp
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(887): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1181): warning C4101: "pSQL": Unreferenzierte lokale Variable
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1346): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1351): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1357): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1391): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1395): warning C4244: "=": Konvertierung von "ULONGLONG" in "long", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1521): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1672): warning C4101: "rc": Unreferenzierte lokale Variable
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1730): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "int", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1730): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1752): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "int", möglicher Datenverlust
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(1752): warning C4244: "Initialisierung": Konvertierung von "ULONGLONG" in "const int", möglicher Datenverlust
+  Quelle.cpp
+  Quelle1.cpp
+  VersionInfo.cpp
+  Code wird generiert...
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(363): warning C4715: "CMultiSQliteMFDlg::execQuery": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(700): warning C4715: "CMultiSQliteMFDlg::PeekAndPump": Nicht alle Codepfade geben einen Wert zurück.
+c:\projects\multisqlite_cpp\multisqlite_cpp\multisqlitemfdlg.cpp(801): warning C4715: "CMultiSQliteMFDlg::setAppID": Nicht alle Codepfade geben einen Wert zurück.
+  shell.c
+  sqlite3.c
+  Code wird generiert...
+  MultiSQLite_CPP.vcxproj -> C:\Projects\MultiSQLite_CPP\\Debug\MultiSQLite_CPP.exe
