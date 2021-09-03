@@ -49,7 +49,8 @@ class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
-
+	CAboutDlg(CString strVersion);
+	virtual BOOL OnInitDialog();
 	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
@@ -57,7 +58,7 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
+	CString strVersion;
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -65,8 +66,21 @@ public:
 	afx_msg void OnBtnClickedFlickerCount();	
 };
 
+CAboutDlg::CAboutDlg(CString strVersion) : CDialogEx(IDD_ABOUTBOX)
+{
+	this->strVersion = strVersion;
+}
+
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
 {
+}
+
+
+BOOL CAboutDlg::OnInitDialog()
+{
+	CStatic* lblAboutVersion = (CStatic*)GetDlgItem(IDC_ABOUTVERSION);
+	lblAboutVersion->SetWindowText(CString(L"MultiSQLite ") + strVersion);
+	return TRUE;
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -241,7 +255,7 @@ BOOL CMultiSQliteMFDlg::OnInitDialog()
 
 	lb = (CListBox*)GetDlgItem(IDC_LIST);
 	CString strVersionPrefix = bIsDebug ? L" (Debug)" : L" (Release)";
-	CString strVersion = CString("Version: ") + GetAppVersion(GetAppPath()) + strVersionPrefix;
+	strVersion = CString("Version: ") + GetAppVersion(GetAppPath()) + strVersionPrefix;
 	lb->AddString(CString( APP_NAME ));
 	lb->AddString(strVersion);
 	CStatic* lblVersion =  (CStatic*)GetDlgItem(IDC_VERSION);	
@@ -1834,38 +1848,11 @@ void CMultiSQliteMFDlg::OnFileExit()
 }
 
 
-
-
-
-
-
-	
-
-
 void CMultiSQliteMFDlg::OnHelpAbout()
-{
-	
-
-	// Invoking the Dialog
-	CDialog dlg(IDD_ABOUTBOX);
-	dlg.DoModal();	
+{	
+	CAboutDlg* aboutDlg = new CAboutDlg(strVersion);
+	aboutDlg->DoModal();
 	return;
-	aboutDlg = new CAboutDlg();
-
-	//if (aboutDlg != NULL)
-	{
-		BOOL ret = aboutDlg->Create(IDD_ABOUTBOX, this);
-
-		if (!ret)   //Create failed.
-		{
-			AfxMessageBox(_T("Error creating Dialog"));
-		}
-		//aboutDlg->ShowWindow(SW_SHOW);
-		aboutDlg->DoModal();
-	}
-
-	// Delete the dialog once done
-	delete aboutDlg;
 }
 
 
@@ -1966,10 +1953,10 @@ void CMultiSQliteMFDlg::OnShowManual()
 
 	lb->AddString(_T("Showing Manual"));
 	
-	CString strManual = CString(L"\"") + strAppFolder + "Haufe_MultiSQLite_CPP_Manual.pdf\"";
+	CString strManual = strAppFolder + "Haufe_MultiSQLite_CPP_Manual.pdf";
 	CString strManualNew = strAppFolder + "Haufe_MultiSQLite_CS_Manual.new";
 	CString strViewer = strAppFolder + "Viewer.exe";
-	TCHAR urlManual[] = TEXT("https://github.com/ushaufe/MultiSQLite_CPP/raw/master/Doc/Manual.pdf/Haufe_MultiSQLite_CPP_Manual.pdf");
+	TCHAR urlManual[] = TEXT("https://github.com/ushaufe/MultiSQLite_CPP/raw/master/Doc/Haufe_MultiSQLite_CPP_Manual.pdf");	
 	TCHAR urlViewer[] = TEXT("https://github.com/ushaufe/MultiSQLite_CS/raw/master/Tools/Viewer.exe");
 
 	try	
@@ -2005,7 +1992,7 @@ void CMultiSQliteMFDlg::OnShowManual()
 		if (PathFileExists(strManualNew))
 		{
 			DeleteFile(strManual);
-			MoveFile(strManualNew, strManual);
+			MoveFile(strManualNew,strManual );
 		}
 	}
 	catch (...) {}

@@ -130,6 +130,7 @@ protected:
 	CString getDBVersionString(int nDBVersion);
 	int getDBVersionNumber();
 	CString strDatabaseFile;
+	CString strVersion;
 	static CString strAppID;
 	UINT_PTR tiUpdateApps = 1;
 	UINT_PTR tiRestartAfterUpdate = 2;

@@ -243,6 +243,15 @@
     <Image Include="..\Haufe.bmp" />
     <Image Include="..\Haufe_Transparent.png" />
     <Image Include="..\icon1.ico" />
+    <Image Include="..\Resources\APP_TITLE.bmp" />
+    <Image Include="..\Resources\Connections.ico" />
+    <Image Include="..\Resources\Connections2_Light.bmp" />
+    <Image Include="..\Resources\CPP.bmp" />
+    <Image Include="..\Resources\CPP32.bmp" />
+    <Image Include="..\Resources\CPP48.bmp" />
+    <Image Include="..\Resources\Haufe.16bmp.bmp" />
+    <Image Include="..\Resources\Haufe.bmp" />
+    <Image Include="..\Resources\Sqlite64..bmp" />
     <Image Include="..\Sqlite.bmp" />
     <Image Include="..\Sqlite64..bmp" />
     <Image Include="res\MultiSQliteMF.ico" />

@@ -137,5 +137,32 @@
     <Image Include="..\Connections.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\Resources\Haufe.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\Haufe.16bmp.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\Sqlite64..bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\APP_TITLE.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\CPP.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\CPP32.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\CPP48.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\Connections2_Light.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\Resources\Connections.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

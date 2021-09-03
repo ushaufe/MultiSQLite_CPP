@@ -5,6 +5,8 @@
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
+#define IDC_ABOUTVERSION				102
+
 #define IDR_MAINFRAME                   131
 #define IDB_HAUFE                       136
 #define IDB_HAUFE16                     138
