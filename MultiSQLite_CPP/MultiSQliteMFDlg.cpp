@@ -2023,7 +2023,7 @@ void CMultiSQliteMFDlg::OnShowManual()
 	{
 		if (PathFileExists(strViewer))
 		{
-			HINSTANCE hr = ShellExecute(NULL, _T("open"), strViewer, strManual, NULL, SW_SHOWNORMAL);
+			HINSTANCE hr = ShellExecute(NULL, _T("open"), strViewer, CString("")  + strManual + CString(""), NULL, SW_SHOWNORMAL);
 		}
 	}
 	catch (...)
